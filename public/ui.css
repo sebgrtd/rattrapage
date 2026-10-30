@@ -14,8 +14,9 @@
 * { scrollbar-width: thin; scrollbar-color: #555 #151515; }
 ::selection { color: #000; background: var(--accent); }
 [hidden] { display: none !important; }
-.wordmark { display: inline-flex; align-items: center; gap: 3px; font-family: Arial, sans-serif; font-weight: 800; font-size: 29px; line-height: 1; letter-spacing: -1.2px; color: #fff; text-decoration: none; white-space: nowrap; }
-.wordmark .hub { display: inline-block; padding: 5px 7px 6px; border-radius: 5px; color: #000; background: var(--accent); }
+.wordmark { display: inline-flex; align-items: center; gap: 0; font-family: "Segoe UI", Arial, sans-serif; font-weight: 550; font-size: 29px; line-height: 1; letter-spacing: -.9px; color: #fff; text-decoration: none; white-space: nowrap; }
+.wordmark img { margin-right: 12px; }
+.brand-point { width: 6px; height: 6px; margin: 16px 0 0 5px; background: var(--accent); border-radius: 50%; }
 .brand { display: flex; align-items: center; gap: 20px; }
 .brand .brand-caption { color: var(--muted); font-size: 9px; letter-spacing: 2px; font-weight: 500; }
 button, input, a { -webkit-tap-highlight-color: transparent; }
@@ -50,7 +51,6 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .select-option[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
 .select-empty { padding: 14px 10px; color: var(--muted); margin: 0; }
 .select-hint { flex-shrink: 0; margin: 6px 5px 0; border-top: 1px solid #383838; padding: 9px 3px 3px; font-size: 9px; color: #aaa; letter-spacing: .15px; }
-.history-panel .custom-select { min-width: 245px; }
 .target .custom-select { min-width: 0; width: 190px; }
 .target .custom-select .select-trigger { font-size: 17px; font-weight: 600; padding-block: 10px; }
 .search-field { display: flex; align-items: center; position: relative; min-width: 0; }
@@ -68,6 +68,5 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   .filters .search-field { flex: 1 1 150px; }
   .filters .search-field input { width: 100%; }
   .filters .custom-select { flex: 1 1 155px; }
-  .history-panel .custom-select { min-width: 0; width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
