@@ -86,6 +86,8 @@ Les composants partagés sont dans `public/ui.js` et `public/ui.css`, servis par
 
 Avec le hub déjà lancé, ouvrir un terminal supplémentaire et lancer **`npm run cli`**. Le CLI reprend la flotte, le débit, les alertes et les agrégations du même serveur, avec navigation au clavier, recherche, filtres, pause et historique.
 
+Il reprend aussi le thème noir, orange `#ff9900` et blanc du site, avec « Hub » sur fond orange. Le graphe, le curseur de sélection et les raccourcis sont orange ; les couleurs des états restent distinctes. Si le CLI tournait avant la mise à jour, quitter avec `q` puis relancer la commande pour charger les nouvelles couleurs.
+
 ```sh
 npm run cli
 ```
@@ -353,7 +355,7 @@ Bonus implémentés : chaîne de traitement JSON extensible, alertes avec durée
 
 Le dépôt a été créé spécifiquement pour ce projet. L’historique contient des commits de progression réels : protocole, métier, application, validation et documentation. Aucun historique antidaté, aucun autre projet repris. `.gitignore` exclut dépendances, compilation, données de test et secrets. Le tag annoté `v1.0` identifie le rendu ; les workflows s’appliquent également au push de ce tag.
 
-Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés, la démo interactive et les composants web personnalisés. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal), `v1.0-before-interactive` (avant les commandes de démo) et `v1.0-before-custom-ui` (avant le thème noir/orange et les menus personnalisés). Le correcteur doit utiliser **`v1.0`**.
+Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés, la démo interactive, les composants web personnalisés et le thème noir/orange commun au web et au CLI. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal), `v1.0-before-interactive` (avant les commandes de démo), `v1.0-before-custom-ui` (avant le thème et les menus web) et `v1.0-before-cli-theme` (avant l’harmonisation des couleurs du terminal). Le correcteur doit utiliser **`v1.0`**.
 
 ```sh
 git log --oneline --decorate
