@@ -20,7 +20,9 @@ npm run hub
 
 Ouvrir **http://127.0.0.1:3000**. Le hub sert lui-même l’interface : aucune commande front supplémentaire. Au démarrage, tous les compteurs de réception et de flotte sont à **zéro**. L’historique d’une précédente session reste accessible séparément.
 
-Le tag **`v1.0`** contient le rendu complet : hub, simulateurs automatique et interactif, interfaces web et CLI, bonus, tests, guides et captures. `main` contient également cette version ; utiliser le tag pour reproduire exactement le rendu évalué.
+Le tag **`v1.0`** contient le rendu complet : hub, simulateurs automatique et interactif, interfaces web et CLI, bonus, tests, guides, captures et diaporama de soutenance. `main` contient également cette version ; utiliser le tag pour reproduire exactement le rendu évalué.
+
+Support de soutenance : [PowerPoint avec notes orales](docs/presentation/PulseHub-soutenance.pptx) et [version PDF](docs/presentation/PulseHub-soutenance.pdf). Le [guide de préparation](docs/soutenance.md) détaille le parcours de 20 minutes et les questions à travailler.
 
 Dans un second terminal, depuis le même dossier :
 
@@ -355,7 +357,7 @@ Bonus implémentés : chaîne de traitement JSON extensible, alertes avec durée
 
 Le dépôt a été créé spécifiquement pour ce projet. L’historique contient des commits de progression réels : protocole, métier, application, validation et documentation. Aucun historique antidaté, aucun autre projet repris. `.gitignore` exclut dépendances, compilation, données de test et secrets. Le tag annoté `v1.0` identifie le rendu ; les workflows s’appliquent également au push de ce tag.
 
-Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés, la démo interactive, les composants web personnalisés et le thème noir/orange commun au web et au CLI. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal), `v1.0-before-interactive` (avant les commandes de démo), `v1.0-before-custom-ui` (avant le thème et les menus web) et `v1.0-before-cli-theme` (avant l’harmonisation des couleurs du terminal). Le correcteur doit utiliser **`v1.0`**.
+Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés, la démo interactive, les composants web personnalisés, le thème noir/orange commun au web et au CLI, ainsi que le diaporama de soutenance. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal), `v1.0-before-interactive` (avant les commandes de démo), `v1.0-before-custom-ui` (avant le thème et les menus web), `v1.0-before-cli-theme` (avant l’harmonisation des couleurs du terminal) et `v1.0-before-slides` (avant le diaporama). Le correcteur doit utiliser **`v1.0`**.
 
 ```sh
 git log --oneline --decorate
