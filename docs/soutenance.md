@@ -14,6 +14,8 @@ Le [PowerPoint](presentation/PulseHub-soutenance.pptx) contient **12 diapositive
 
 La [version PDF](presentation/PulseHub-soutenance.pdf) reprend les diapositives pour une lecture ou une projection sans PowerPoint. Les notes orales restent dans le fichier PowerPoint. Les captures du web, de la démo et du moteur CLI montrent de vraies données du hub local, figées au moment de leur export.
 
+Pour montrer l’historique, ouvrir **Consulter l’historique**, choisir une date et une heure, puis **Voir les mesures**. Expliquer la granularité : un relevé toutes les 5 secondes, avec une recherche à ±2,5 secondes et un horodatage réel explicite. Choisir ensuite une date sans enregistrement pour montrer le message d’absence de données. La table historique affiche l’âge et la péremption au moment du relevé. La réception UDP continue pendant cette consultation.
+
 Le parcours proposé réserve **17 minutes à la présentation, dont 4 minutes de démo, puis 3 minutes aux questions**. Cette répartition est une proposition de préparation, pas une consigne supplémentaire du sujet. Les annexes sur le binaire, la chaîne JSON et les commandes servent seulement en cas de question.
 
 ## Parcours de 20 minutes
