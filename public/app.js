@@ -10,6 +10,9 @@ const set = (id, value) => { $(id).textContent = value; };
 const element = (tag, text, className) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; };
 const age = ms => ms < 1000 ? `${Math.round(ms)} ms` : `${format.format(ms / 1000)} s`;
 const name = id => `PH-${String(id).padStart(3, '0')}`;
+const processingSummary = element('p', '0 redémarrage · 0 trame filtrée · 0 trame en confirmation', 'footnote');
+processingSummary.id = 'processing-summary';
+$('quality').after(processingSummary);
 
 function drawChart(value) {
   rates.push(value); if (rates.length > 60) rates.shift();
@@ -26,13 +29,22 @@ function renderTable() {
   const devices = current.devices.filter(d => (name(d.id).toLowerCase().includes(query) || String(d.id).includes(query)) && (filter === 'all' || (filter === 'attention' ? ['alert', 'watch', 'stale'].includes(d.status) : d.status === filter)));
   const fragment = document.createDocumentFragment();
   for (const d of devices) {
-    const tr = element('tr'); tr.append(element('td', name(d.id)));
+    const tr = element('tr');
+    const identity = element('td', name(d.id));
+    if (d.restarts) identity.append(element('small', `↻ ${d.restarts} redémarrage${d.restarts > 1 ? 's' : ''}`, 'metric-secondary'));
+    tr.append(identity);
     const state = element('td'); state.append(element('span', labels[d.status], `status ${d.status}`)); tr.append(state);
     for (const m of d.metrics) {
       const unit = m.id === 1 ? ' °C' : m.id === 2 ? ' V' : ' A';
       const td = element('td', m.value === null ? '—' : format.format(m.value / (m.id === 1 ? 100 : 1000)) + unit,
         m.stale || d.status === 'offline' ? 'stale-value' : '');
       td.title = m.ageMs === null ? 'Aucune mesure reçue' : `Âge de la mesure : ${age(m.ageMs)}${m.stale ? ' (périmée)' : ''}`;
+      for (const a of (d.aggregates ?? []).filter(a => a.metricId === m.id)) {
+        const value = a.stale || d.status === 'offline' ? '—' : format.format(a.value / (m.id === 1 ? 100 : 1000)) + unit;
+        const summary = element('small', `${a.label} : ${value}`, 'metric-secondary');
+        summary.title = `${a.samples} échantillons ; fenêtre ${a.windowMs / 1000} s`;
+        td.append(summary);
+      }
       tr.append(td);
     }
     tr.append(element('td', age(d.ageMs), 'muted'), element('td', format.format(d.lost), d.lost ? 'hot-value' : 'muted'));
@@ -76,6 +88,7 @@ function render(s, chart = true) {
   for (const key of ['received', 'invalid', 'lost']) set(key, format.format(s.counters[key]));
   set('discarded', `${format.format(s.counters.duplicates)} / ${format.format(s.counters.late)}`);
   set('quality', `Invalides ${format.format(s.invalidPercent)} % · pertes estimées ${format.format(s.lossPercent)} % · compteurs cumulés depuis le démarrage`);
+  processingSummary.textContent = `${format.format(s.counters.restarts ?? 0)} redémarrage(s) · ${format.format(s.counters.filtered ?? 0)} trame(s) filtrée(s) · ${format.format(s.counters.restartPending ?? 0)} trame(s) écartée(s) en confirmation`;
   set('fleet-count', '/ ' + s.totals.devices);
   const degraded = s.counters.invalid + s.counters.lost + s.counters.capacityRejected > 0;
   set('reception-state', !s.counters.received ? 'AUCUN SIGNAL' : !s.ratePerSecond ? 'FLUX ARRÊTÉ' : degraded ? 'DÉFAUTS OBSERVÉS' : 'RÉCEPTION SAINE');

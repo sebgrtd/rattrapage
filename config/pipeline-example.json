@@ -1,0 +1,8 @@
+{
+  "pipeline": [
+    { "id": "selection", "type": "filter", "excludeDeviceIds": [50] },
+    { "id": "temperature-mean", "type": "aggregate", "label": "Moy. 5 s", "metricId": 1, "operation": "mean", "windowMs": 5000, "maxSamples": 128 },
+    { "id": "voltage-min", "type": "aggregate", "label": "Min. 10 s", "metricId": 2, "operation": "min", "windowMs": 10000, "maxSamples": 256 },
+    { "id": "physical-alerts", "type": "alerts", "ruleIds": ["temperature", "voltage", "current"] }
+  ]
+}
