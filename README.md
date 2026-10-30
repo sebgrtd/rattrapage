@@ -13,14 +13,14 @@ Prérequis : **Node.js 22.15 ou supérieur**, npm et Git. Version utilisée pour
 ```sh
 git clone https://github.com/sebgrtd/rattrapage.git
 cd rattrapage
-git checkout main
+git checkout v1.0
 npm ci
 npm run hub
 ```
 
 Ouvrir **http://127.0.0.1:3000**. Le hub sert lui-même l’interface : aucune commande front supplémentaire. Au démarrage, tous les compteurs de réception et de flotte sont à **zéro**. L’historique d’une précédente session reste accessible séparément.
 
-`main` contient également l’interface terminal ajoutée après le rendu `v1.0`. Pour reproduire exactement ce rendu figé, utiliser `git checkout v1.0` avant `npm ci` ; le CLI n’y est pas inclus.
+Le tag **`v1.0`** contient le rendu complet : hub, simulateur, interfaces web et CLI, bonus, tests, guides et captures. `main` contient également cette version ; utiliser le tag pour reproduire exactement le rendu évalué.
 
 Dans un second terminal, depuis le même dossier :
 
@@ -108,7 +108,7 @@ Le [guide terminal](docs/terminal.md) détaille les raccourcis, les options, la 
 
 Cet aperçu est exporté par le même moteur de rendu que le CLI, avec les données de la démo locale au moment de la capture. Les deux images web sont des captures du navigateur. Elles ne représentent pas des appareils physiques connectés.
 
-Pour produire un instantané texte sans interaction : `npm.cmd run cli -- --once --no-color`. Pour utiliser un autre hub : `npm.cmd run cli -- --url http://127.0.0.1:3010`. Le CLI se trouve sur `main` ; il n’est pas inclus dans le tag historique `v1.0`.
+Pour produire un instantané texte sans interaction : `npm.cmd run cli -- --once --no-color`. Pour utiliser un autre hub : `npm.cmd run cli -- --url http://127.0.0.1:3010`. Le CLI est inclus dans le tag de rendu `v1.0`.
 
 ## Commandes et configuration
 
@@ -337,6 +337,8 @@ Bonus implémentés : chaîne de traitement JSON extensible, alertes avec durée
 ## Git et remise
 
 Le dépôt a été créé spécifiquement pour ce projet. L’historique contient des commits de progression réels : protocole, métier, application, validation et documentation. Aucun historique antidaté, aucun autre projet repris. `.gitignore` exclut dépendances, compilation, données de test et secrets. Le tag annoté `v1.0` identifie le rendu ; les workflows s’appliquent également au push de ce tag.
+
+Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal et les guides illustrés. Les versions précédentes restent consultables sous `v1.0-initial` (première version) et `v1.0-before-cli` (bonus complets, avant ajout du dashboard terminal). Le correcteur doit utiliser **`v1.0`**.
 
 ```sh
 git log --oneline --decorate

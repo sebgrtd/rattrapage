@@ -2,6 +2,12 @@
 
 Ce document aide à comprendre et démontrer le livrable. Il ne remplace pas la lecture du code. Refaire les expériences et reformuler les explications avec ses propres mots.
 
+## Format demandé par le sujet
+
+Le sujet indique une **soutenance individuelle de 20 minutes, sur convocation**. Il ne demande ni diaporama ni fichier PowerPoint : le livrable unique annoncé est le dépôt Git, évalué au tag `v1.0`. Il exige de pouvoir expliquer chaque ligne livrée, y compris le code produit avec assistance IA.
+
+Un support court de quelques diapositives est facultatif d’après ce document. Il peut présenter le problème, l’architecture, les choix et les limites ; la démonstration de l’application et l’explication du code restent centrales. Une consigne complémentaire donnée sur la convocation peut préciser le format.
+
 ## Parcours de 20 minutes
 
 | Temps | Démonstration | Ce qu’il faut expliquer |
@@ -11,7 +17,7 @@ Ce document aide à comprendre et démontrer le livrable. Il ne remplace pas la 
 | 5–8 min | Redémarrer les deux processus, lancer la démo | Corruption, doublons, retards, pertes estimées, surchauffe temporisée, appareil arrêté |
 | 8–11 min | Ouvrir `protocol.ts` et son premier test | Offsets, longueur, endian, int16 signé et XOR F6 |
 | 11–14 min | Ouvrir `sequence.ts` puis `fleet.ts` | Différence modulaire, wrap, pertes, âge des mesures, horloge injectée |
-| 14–16 min | Historique, filtres et reconnexion | Lecture différée et données figées lors d’une déconnexion |
+| 14–16 min | Historique et filtres web, aperçu du CLI avec `npm run cli` | Même hub, affichage SSE côté web et lecture HTTP côté CLI ; historique et pause distingués du direct |
 | 16–18 min | `npm run check`, CI et benchmark | Tests réellement exécutés, méthode de charge et portée des résultats |
 | 18–20 min | Compromis, limites, usage de l’IA | Détection de redémarrage et ambiguïtés restantes, chaîne configurable, historique borné, assistance déclarée |
 

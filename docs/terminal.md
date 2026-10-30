@@ -2,7 +2,7 @@
 
 Le CLI est une seconde interface du même hub. Il lit `/api/state` toutes les 500 ms après la fin de la requête précédente, avec un délai maximum de 2 secondes. Les mesures, états, agrégations et compteurs viennent du serveur ; aucun appareil ni alerte n’est inventé par cette interface. Le navigateur peut rester ouvert en parallèle.
 
-Cette interface est disponible sur `main`, ajoutée après le rendu figé `v1.0`.
+Cette interface est incluse dans le rendu complet tagué **`v1.0`**, également disponible sur `main`.
 
 ```sh
 npm run hub
