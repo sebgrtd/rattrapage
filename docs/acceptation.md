@@ -32,6 +32,18 @@
 4. Ouvrir la page avec une largeur de 390 px ; vérifier les cartes sur deux colonnes et le défilement horizontal limité au tableau.
 5. Arrêter le hub et vérifier le libellé « Déconnecté · données figées ». Relancer le hub : EventSource se reconnecte automatiquement.
 
+### Menus et contrôles personnalisés
+
+1. Au clavier, ouvrir le filtre d’état avec `↓`, aller au dernier état avec `Fin`, puis `Entrée`. Sans appareil hors ligne, la table doit annoncer zéro résultat. Revenir à « Tous les états » avec la souris.
+2. Saisir `009` dans la recherche de flotte, puis utiliser « Effacer la recherche » : une seule ligne, puis toute la flotte ; le focus revient au champ.
+3. Ouvrir l’historique et sélectionner un instantané au clavier. Vérifier « Lecture historique », puis le retour au direct.
+4. Dans l’atelier, ouvrir les appareils, chercher `050`, valider avec `Entrée` : le panneau observé doit afficher PH-050. Chercher ensuite un identifiant inexistant : « Aucun résultat ». `Échap` ferme en conservant PH-050 et rend le focus au sélecteur.
+5. Vérifier qu’un clic extérieur et `Tab` ferment les menus sans modifier la valeur. Le focus doit poursuivre vers la commande suivante, sans rester bloqué dans la liste.
+6. À 390 px de largeur, ouvrir les menus du dashboard et de l’atelier : aucun débordement de la page, menus dans la fenêtre, tableau défilable horizontalement.
+7. Survoler une mesure et sa moyenne : les infobulles utilisent le thème de l’application et restent cohérentes après les mises à jour SSE. Vérifier les contrastes du texte et la distinction des états avec leurs libellés.
+
+Validation du 30 octobre 2026 : filtres, historique, recherche/effacement, choix d’appareil à la souris et au clavier, aucun résultat, Échap, Tab, affichages desktop et 390 px contrôlés dans Chrome. Les captures du README proviennent des interfaces en fonctionnement. Les tests d’intégration vérifient aussi la disponibilité et les types MIME des ressources partagées sur les deux serveurs.
+
 ## Contrôles automatisés
 
 `npm run check` couvre le décodeur, la synthèse et les vrais échanges UDP/HTTP/SSE. Les tests unitaires injectent une horloge pour les temporisations métier. Les tests d’intégration des simulateurs automatique et interactif utilisent de vrais sockets loopback et des délais réduits.

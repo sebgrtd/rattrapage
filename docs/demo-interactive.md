@@ -19,6 +19,8 @@ Ouvrir **http://127.0.0.1:3100** pour les commandes et **http://127.0.0.1:3000**
 
 ![Surchauffe de PH-009 réellement détectée par le hub](demo-interactive.png)
 
+Le sélecteur d’appareil est personnalisé et permet de chercher directement `009` ou `PH-009`. Les flèches parcourent les résultats, `Entrée` sélectionne, `Échap` ferme sans changer d’appareil. La sélection ne déclenche aucune commande ; l’action nécessite ensuite un clic sur un bouton de scénario. Les menus, le logo et les contrôles partagent le thème noir/orange du dashboard.
+
 ## Parcours avec les seuils par défaut
 
 1. Choisir **PH-009**. Vérifier « Active », une température autour de 43 °C et « Opérationnel » dans la colonne du hub.
