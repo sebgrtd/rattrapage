@@ -16,6 +16,8 @@ npm run cli
 
 L’image est une exportation du moteur de rendu avec les données de la démo locale au moment de la capture. L’application interactive s’actualise en continu.
 
+Le CLI partage la palette du site : fond noir `#000000`, texte blanc et accents orange `#ff9900`. « Hub » apparaît en noir sur un bloc orange ; graphe, sélection et raccourcis reprennent cet accent. Les états conservent leurs libellés et leurs couleurs dédiées : vert pour opérationnel, jaune pour observation/alerte, rouge pour hors ligne. Après une mise à jour du code, quitter le CLI avec `q` puis relancer `npm run cli` pour charger le thème.
+
 Utiliser Windows Terminal, PowerShell ou un terminal compatible ANSI. Préférer **130 colonnes × 42 lignes** avec une police monospace comme Cascadia Mono. Le minimum est de 73 colonnes × 29 lignes ; sous 111 colonnes, la table devient compacte, avec les pertes et agrégats dans le détail de l’appareil sélectionné. Les couleurs sont désactivées avec `NO_COLOR` ou `--no-color`.
 
 ## Navigation

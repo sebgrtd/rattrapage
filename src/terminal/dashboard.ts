@@ -33,15 +33,17 @@ const metric = (id: number, value: number | null) => value === null ? '—' : nu
 const pad = (value: string, width: number) => value.slice(0, width).padEnd(width);
 export function renderDashboard(state: DashboardState, width: number, height: number): Screen {
   const screen = new Screen(width, height);
+  screen.text(2, 1, 'Pulse', 'text', true);
+  screen.fill(7, 1, 5, 1, 'accent');
+  screen.text(7, 1, ' Hub ', 'bg', true);
+  screen.text(14, 1, '/ TERMINAL', 'muted');
   if (width < 72 || height < 28) {
-    screen.text(2, 1, 'PULSEHUB / TERMINAL', 'lime', true);
     screen.text(2, 3, 'Agrandir le terminal : 73 colonnes × 29 lignes minimum.', 'amber');
     screen.text(2, 5, 'q quitter  |  --once pour un instantané texte', 'muted'); return screen;
   }
   const snapshot = displayed(state);
   const time = state.mode === 'history' ? state.history[state.historyIndex]?.at : state.mode === 'pause' ? state.frozen?.at : state.latest?.at;
   const mode = state.mode === 'history' ? `HISTORIQUE ${state.historyIndex + 1}/${state.history.length}` : state.mode === 'pause' ? 'PAUSE / DONNÉES FIGÉES' : state.connected ? 'EN DIRECT' : 'HUB DÉCONNECTÉ';
-  screen.text(2, 1, 'p h  /  P U L S E H U B', 'lime', true);
   screen.text(Math.max(29, width - 36), 1, mode, state.mode === 'live' && state.connected ? 'green' : 'amber', true);
   screen.text(2, 2, `RÉGIE TERMINAL  ·  ${state.endpoint}`, 'muted', false, width - 24);
   screen.text(width - 18, 2, time ? new Date(time).toLocaleTimeString('fr-FR') : '--:--:--', 'muted');
@@ -54,10 +56,10 @@ export function renderDashboard(state: DashboardState, width: number, height: nu
   });
   const chartWidth = Math.floor((width - 3) * 0.59);
   screen.box(1, 8, chartWidth, 6, 'RÉCEPTION');
-  screen.text(3, 9, `${number(snapshot?.ratePerSecond ?? 0)} trames/s`, 'lime', true);
+  screen.text(3, 9, `${number(snapshot?.ratePerSecond ?? 0)} trames/s`, 'accent', true);
   const rates = state.mode === 'history' ? state.history.slice(0, state.historyIndex + 1).map(e => e.snapshot.ratePerSecond) : state.rates;
   const history = rates.slice(-(chartWidth - 5)); const max = Math.max(1, ...history);
-  screen.text(3, 10, history.map(v => '▁▂▃▄▅▆▇█'[Math.min(7, Math.floor(7 * v / max))]).join(''), 'lime');
+  screen.text(3, 10, history.map(v => '▁▂▃▄▅▆▇█'[Math.min(7, Math.floor(7 * v / max))]).join(''), 'accent');
   screen.text(3, 11, `Invalides ${number(snapshot?.invalidPercent ?? 0)} % · pertes ${number(snapshot?.lossPercent ?? 0)} %`, 'muted', false, chartWidth - 4);
   screen.text(3, 12, `${number(snapshot?.counters.received ?? 0)} reçues · ${number(snapshot?.counters.lost ?? 0)} trous`, 'muted', false, chartWidth - 4);
   const alertX = chartWidth + 2; const alertWidth = width - alertX - 1;
@@ -78,7 +80,7 @@ export function renderDashboard(state: DashboardState, width: number, height: nu
   headings.forEach((h, i) => screen.text(columns[i]!, 15, h, 'muted'));
   devices.slice(first, first + capacity).forEach((d, row) => {
     const y = 16 + row; const status = statuses[d.status]!;
-    if (first + row === selected) { screen.fill(2, y, width - 4, 1, 'selected'); screen.text(2, y, '›', 'lime'); }
+    if (first + row === selected) { screen.fill(2, y, width - 4, 1, 'selected'); screen.text(2, y, '›', 'accent'); }
     const values = d.metrics.map(m => metric(m.id, m.value) + (m.stale && m.value !== null ? '~' : ''));
     const average = d.aggregates?.find(a => a.metricId === 1 && a.operation === 'mean');
     const texts = [name(d.id), status.label, ...values, ...(wide ? [average && !average.stale && d.status !== 'offline' ? metric(1, average.value) : '—', age(d.ageMs), number(d.lost)] : [age(d.ageMs)])];
@@ -90,7 +92,7 @@ export function renderDashboard(state: DashboardState, width: number, height: nu
   if (device) {
     screen.text(3, detailY + 1, `Séq. ${device.seq}   Uptime ${age(device.uptimeMs)}   Redémarrages ${device.restarts ?? 0}   Pertes ${number(device.lost)}`, 'text', false, width - 6);
     const aggregates = (device.aggregates ?? []).map(a => `${a.label}: ${a.stale || device.status === 'offline' ? '—' : metric(a.metricId, a.value)} (${a.samples} éch.)`);
-    screen.text(3, detailY + 2, aggregates.join('  ·  ') || 'Aucune agrégation configurée.', 'lime', false, width - 6);
+    screen.text(3, detailY + 2, aggregates.join('  ·  ') || 'Aucune agrégation configurée.', 'accent', false, width - 6);
     screen.text(3, detailY + 3, device.alerts.map(a => `${a.label} ${a.active ? 'ACTIVE' : 'en observation'}`).join(' · ') || `${statuses[device.status]!.label} · ${number(device.accepted)} trames acceptées · ~ = mesure périmée`, 'muted', false, width - 6);
   }
   const service = state.latest?.service;
@@ -99,7 +101,7 @@ export function renderDashboard(state: DashboardState, width: number, height: nu
   screen.text(2, height - 3, footer, state.connected ? 'muted' : 'red', false, width - 4);
   screen.fill(0, height - 2, width, 1, 'selected');
   const shortcuts = width >= 100 ? '↑↓ naviguer  / chercher  f filtre  espace pause  h historique  ? aide  q quitter' : '↑↓ choix  / chercher  f filtre  espace pause  h hist.  ? aide  q';
-  screen.text(2, height - 2, state.editing ? `RECHERCHE /${state.query}█   Entrée valider · Échap annuler` : shortcuts, 'lime', false, width - 4);
+  screen.text(2, height - 2, state.editing ? `RECHERCHE /${state.query}█   Entrée valider · Échap annuler` : shortcuts, 'accent', false, width - 4);
   if (state.help) {
     const w = Math.min(76, width - 4); const x = Math.floor((width - w) / 2); const y = 6;
     screen.box(x, y, w, 17, 'RACCOURCIS');

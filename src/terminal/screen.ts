@@ -1,8 +1,8 @@
 /** Fixed-cell rendering shared by the ANSI terminal and the inspectable preview. */
 export const palette = {
-  bg: '#0b100e', panel: '#111a16', selected: '#233420', border: '#304237',
-  text: '#e4eee5', muted: '#8d9f92', lime: '#d5f397', green: '#92d5af',
-  amber: '#f2cc81', red: '#f08f88', blue: '#9ccbdc',
+  bg: '#000000', panel: '#151515', selected: '#33240e', border: '#414141',
+  text: '#ffffff', muted: '#a3a3a3', accent: '#ff9900', green: '#8fd6ad',
+  amber: '#f6cf65', red: '#ff8585', blue: '#a8b5c8',
 };
 export type Tone = keyof typeof palette;
 export interface Cell { char: string; fg: Tone; bg: Tone; bold: boolean }
