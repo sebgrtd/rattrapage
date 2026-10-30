@@ -1,0 +1,29 @@
+{
+  "name": "pulsehub",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hub local de supervision de télémétrie UDP pour une régie événementielle",
+  "engines": {
+    "node": ">=22.15.0"
+  },
+  "scripts": {
+    "hub": "tsx src/hub.ts",
+    "simulator": "tsx src/simulator.ts",
+    "demo": "tsx src/simulator.ts --checksum-rate 0.03 --duplicate-rate 0.04 --reorder-rate 0.04 --anomaly-rate 0.15 --stop-device 7 --stop-after 8",
+    "test": "node --import tsx --test test/*.test.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "permalinks": "node scripts/permalinks.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "eslint": "9.39.5",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1"
+  }
+}
