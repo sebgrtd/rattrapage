@@ -34,9 +34,13 @@
 
 ## Contrôles automatisés
 
-`npm run check` couvre le décodeur, la synthèse et les vrais échanges UDP/HTTP/SSE. Les tests injectent une horloge pour les temporisations métier : ils ne dépendent pas de pauses de plusieurs secondes. Le test d’intégration du simulateur utilise un réseau loopback et des durées réduites ; c’est le seul test métier nécessitant une émission réelle temporisée.
+`npm run check` couvre le décodeur, la synthèse et les vrais échanges UDP/HTTP/SSE. Les tests unitaires injectent une horloge pour les temporisations métier. Les tests d’intégration des simulateurs automatique et interactif utilisent de vrais sockets loopback et des délais réduits.
 
 `npm run benchmark` produit des mesures et non des estimations théoriques. Voir la méthode, les seuils de réussite et les limites dans le README.
+
+## Démo pilotée depuis le navigateur
+
+Suivre le [parcours interactif](demo-interactive.md) : surchauffe → alerte après la durée configurée, coupure → hors ligne, retour au nominal, redémarrage → compteur augmenté. Vérifier les effets dans le panneau de contrôle, le dashboard web et le CLI. Garder un seul simulateur actif sur les identifiants utilisés.
 
 
 ## Bonus : redémarrage et chaîne JSON

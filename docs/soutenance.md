@@ -21,6 +21,8 @@ Un support court de quelques diapositives est facultatif d’après ce document.
 | 16–18 min | `npm run check`, CI et benchmark | Tests réellement exécutés, méthode de charge et portée des résultats |
 | 18–20 min | Compromis, limites, usage de l’IA | Détection de redémarrage et ambiguïtés restantes, chaîne configurable, historique borné, assistance déclarée |
 
+Pour piloter le rythme de la démonstration, utiliser le [panneau interactif](demo-interactive.md) à la place du simulateur automatique : il permet de déclencher soi-même une surchauffe, une coupure et un redémarrage. Arrêter le simulateur précédent avant de le lancer. La démo automatique reste nécessaire pour montrer spécifiquement checksum faux, duplication et désordre ; ne pas prétendre que le panneau les injecte.
+
 ## Expliquer le protocole, sans réciter
 
 Une trame contient 15 octets fixes avant les mesures, puis 3 octets par mesure et 1 octet de checksum. La longueur totale est donc `16 + 3 × count`. Un heartbeat n’a aucune mesure et mesure 16 octets. Trois mesures produisent 25 octets.

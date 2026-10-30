@@ -4,7 +4,7 @@ Hub de télémétrie UDP pour une régie événementielle. Réception de PulseHu
 
 ![Tableau de bord PulseHub avec 50 appareils et défauts injectés](docs/dashboard.png)
 
-Accès rapide : [démarrage](#démarrer-en-moins-de-cinq-minutes) · [interface web](#interface-web) · [interface CLI](#tableau-de-bord-terminal) · [configuration](#commandes-et-configuration).
+Accès rapide : [démarrage](#démarrer-en-moins-de-cinq-minutes) · [interface web](#interface-web) · [interface CLI](#tableau-de-bord-terminal) · [démo interactive](#déclencher-les-incidents-à-la-demande) · [configuration](#commandes-et-configuration).
 
 ## Démarrer en moins de cinq minutes
 
@@ -20,7 +20,7 @@ npm run hub
 
 Ouvrir **http://127.0.0.1:3000**. Le hub sert lui-même l’interface : aucune commande front supplémentaire. Au démarrage, tous les compteurs de réception et de flotte sont à **zéro**. L’historique d’une précédente session reste accessible séparément.
 
-Le tag **`v1.0`** contient le rendu complet : hub, simulateur, interfaces web et CLI, bonus, tests, guides et captures. `main` contient également cette version ; utiliser le tag pour reproduire exactement le rendu évalué.
+Le tag **`v1.0`** contient le rendu complet : hub, simulateurs automatique et interactif, interfaces web et CLI, bonus, tests, guides et captures. `main` contient également cette version ; utiliser le tag pour reproduire exactement le rendu évalué.
 
 Dans un second terminal, depuis le même dossier :
 
@@ -109,6 +109,16 @@ Le [guide terminal](docs/terminal.md) détaille les raccourcis, les options, la 
 Cet aperçu est exporté par le même moteur de rendu que le CLI, avec les données de la démo locale au moment de la capture. Les deux images web sont des captures du navigateur. Elles ne représentent pas des appareils physiques connectés.
 
 Pour produire un instantané texte sans interaction : `npm.cmd run cli -- --once --no-color`. Pour utiliser un autre hub : `npm.cmd run cli -- --url http://127.0.0.1:3010`. Le CLI est inclus dans le tag de rendu `v1.0`.
+
+### Déclencher les incidents à la demande
+
+Pour la soutenance, **`npm run demo:interactive`** lance un simulateur contrôlable depuis **http://127.0.0.1:3100**. Garder le hub lancé sur le port 3000. Arrêter d’abord tout autre simulateur utilisant les mêmes identifiants ; pour des compteurs à zéro, redémarrer également le hub.
+
+Choisir un appareil puis utiliser **Déclencher une surchauffe**, **Couper l’émission**, **Redémarrer** ou **Revenir à la normale**. Le panneau affiche la consigne du simulateur et l’état réellement observé par le hub. Les effets apparaissent aussi dans le dashboard web et le CLI : les commandes produisent de vraies trames UDP, sans écrire directement dans la synthèse.
+
+![Panneau interactif : surchauffe de PH-009 confirmée par le hub](docs/demo-interactive.png)
+
+Le [guide de démo interactive](docs/demo-interactive.md) donne un parcours de soutenance, les délais attendus, les options et les limites. Cette démo démarre nominale ; `npm run demo` conserve les défauts automatiques de corruption, duplication et désordre.
 
 ## Commandes et configuration
 
@@ -209,6 +219,7 @@ flowchart LR
 | `src/hub.ts` | Point d’entrée CLI du hub |
 | `src/cli.ts`, `src/terminal/` | Tableau de bord terminal, lecture HTTP, navigation clavier et rendu ANSI |
 | `src/simulator.ts` | Appareils virtuels et injection des défauts |
+| `src/demo.ts`, `src/demo/`, `public/demo/` | Simulateur interactif, commandes HTTP locales et observation du hub |
 | `public/` | Affichage, filtres, recherche et consultation de l’historique |
 
 Le décodeur valide la longueur avant toute lecture, puis magic, version, type, longueur exacte, XOR, identifiant et mesures. Les types inconnus, appareils 0, métriques inconnues/répétées et heartbeats avec mesures sont rejetés. Une télémétrie sans mesure est acceptée, le sujet ne l’interdisant pas. Toutes les valeurs `int16` valides sont acceptées structurellement : les anomalies physiques relèvent de la synthèse, pas du décodeur. La trame du sujet `50 48 01 02 00 07 00 00 00 01 00 00 03 E8 00 F6` constitue le premier test du fichier dédié au protocole.
@@ -259,12 +270,12 @@ Les liens ci-dessous sont des **permaliens sur un commit précis**, générés �
 <!-- PRINCIPLES:START -->
 | Principe | Preuve concrète | Code immuable |
 | --- | --- | --- |
-| KISS / traitement explicite | Le décodeur valide chaque champ avec Buffer et retourne un résultat typé ; aucune couche de parsing générique. | [src/protocol.ts, lignes 22–48](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/protocol.ts#L22-L48) |
-| Séparation des responsabilités | Le séquenceur décide uniquement de l’ordre et des trous, indépendamment du réseau, des alertes et de l’affichage. | [src/sequence.ts, lignes 3–74](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/sequence.ts#L3-L74) |
-| Injection de dépendance | Fleet reçoit sa configuration et son horloge ; les tests avancent le temps sans attendre. | [src/fleet.ts, lignes 11–35](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/fleet.ts#L11-L35) |
-| Règles pilotées par les données | Un même moteur évalue les limites et durées de chaque règle JSON ; ajouter une règle ne demande pas de nouvelle condition spécifique. | [src/processing/alerts.ts, lignes 5–28](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/processing/alerts.ts#L5-L28) |
-| Extension par composition | Les étapes implémentent un contrat commun ; une nouvelle factory rejoint le registre sans modifier les étapes existantes. | [src/processing/pipeline.ts, lignes 9–40](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/processing/pipeline.ts#L9-L40) |
-| Frontière réseau / métier | Les adaptateurs UDP et HTTP délèguent le traitement métier à Fleet et diffusent des instantanés. | [src/server.ts, lignes 9–85](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/server.ts#L9-L85) |
+| KISS / traitement explicite | Le décodeur valide chaque champ avec Buffer et retourne un résultat typé ; aucune couche de parsing générique. | [src/protocol.ts, lignes 22–48](https://github.com/sebgrtd/rattrapage/blob/012bfc4803791d4f88730bdd942d8b4b06173f9f/src/protocol.ts#L22-L48) |
+| Séparation des responsabilités | Le séquenceur décide uniquement de l’ordre et des trous, indépendamment du réseau, des alertes et de l’affichage. | [src/sequence.ts, lignes 3–74](https://github.com/sebgrtd/rattrapage/blob/012bfc4803791d4f88730bdd942d8b4b06173f9f/src/sequence.ts#L3-L74) |
+| Injection de dépendance | Fleet reçoit sa configuration et son horloge ; les tests avancent le temps sans attendre. | [src/fleet.ts, lignes 11–35](https://github.com/sebgrtd/rattrapage/blob/012bfc4803791d4f88730bdd942d8b4b06173f9f/src/fleet.ts#L11-L35) |
+| Règles pilotées par les données | Un même moteur évalue les limites et durées de chaque règle JSON ; ajouter une règle ne demande pas de nouvelle condition spécifique. | [src/processing/alerts.ts, lignes 5–28](https://github.com/sebgrtd/rattrapage/blob/012bfc4803791d4f88730bdd942d8b4b06173f9f/src/processing/alerts.ts#L5-L28) |
+| Extension par composition | Les étapes implémentent un contrat commun ; une nouvelle factory rejoint le registre sans modifier les étapes existantes. | [src/processing/pipeline.ts, lignes 9–40](https://github.com/sebgrtd/rattrapage/blob/012bfc4803791d4f88730bdd942d8b4b06173f9f/src/processing/pipeline.ts#L9-L40) |
+| Frontière réseau / métier | Les adaptateurs UDP et HTTP délèguent le traitement métier à Fleet et diffusent des instantanés. | [src/server.ts, lignes 9–85](https://github.com/sebgrtd/rattrapage/blob/012bfc4803791d4f88730bdd942d8b4b06173f9f/src/server.ts#L9-L85) |
 <!-- PRINCIPLES:END -->
 
 Pas de revendication de conformité intégrale à SOLID : l’objectif est une séparation utile et explicable, dans la contrainte d’une journée. Le registre contient uniquement le dernier état par appareil ; le débit utilise un nombre borné de compartiments. Un client SSE lent est déconnecté plutôt que de laisser grossir indéfiniment sa file de sortie.
@@ -283,7 +294,7 @@ Pas de revendication de conformité intégrale à SOLID : l’objectif est une s
 
 ## Qualité et validation
 
-Les 37 tests couvrent les trames de référence, les limites des entiers signés/non signés, les erreurs de structure, 10 000 datagrammes arbitraires déterministes, le séquencement, le wrap uint32, les seuils temporels, la fraîcheur par métrique, les heartbeats, l’arrêt d’un appareil, la capacité du registre, l’historique et sa rotation, les ports occupés, les API HTTP/SSE (dont la diffusion de grandes synthèses sans reconnexion), les **cinq défauts du simulateur sur de vrais sockets UDP**, les redémarrages avec protection contre un paquet isolé, les fenêtres glissantes, les filtres et l’ajout d’un type de traitement sans modification des étapes existantes. Les tests du CLI vérifient les dimensions du rendu, les filtres, la séparation des données live/figées/historiques, la suppression des séquences de contrôle et une lecture HTTP réelle via `--once`.
+Les 39 tests couvrent les trames de référence, les limites des entiers signés/non signés, les erreurs de structure, 10 000 datagrammes arbitraires déterministes, le séquencement, le wrap uint32, les seuils temporels, la fraîcheur par métrique, les heartbeats, l’arrêt d’un appareil, la capacité du registre, l’historique et sa rotation, les ports occupés, les API HTTP/SSE (dont la diffusion de grandes synthèses sans reconnexion), les **cinq défauts du simulateur sur de vrais sockets UDP**, les redémarrages avec protection contre un paquet isolé, les fenêtres glissantes, les filtres et l’ajout d’un type de traitement sans modification des étapes existantes. Les tests du CLI vérifient les dimensions du rendu, les filtres, la séparation des données live/figées/historiques, la suppression des séquences de contrôle et une lecture HTTP réelle via `--once`. Les tests de démo interactive vérifient les commandes, leur isolation par appareil, les refus des entrées invalides et la chaîne HTTP → UDP → état constaté par le hub.
 
 La CI exécute `npm ci` puis `npm run check` à chaque push et pull request, sur Linux et Windows avec Node 22. Les contrôles manuels complémentaires sont décrits dans [docs/acceptation.md](docs/acceptation.md). L’interface a aussi été contrôlée avec un navigateur automatisé sur desktop et mobile ; la capture ci-dessus est issue de la vraie démo, pas d’un jeu de données factice.
 
@@ -338,7 +349,7 @@ Bonus implémentés : chaîne de traitement JSON extensible, alertes avec durée
 
 Le dépôt a été créé spécifiquement pour ce projet. L’historique contient des commits de progression réels : protocole, métier, application, validation et documentation. Aucun historique antidaté, aucun autre projet repris. `.gitignore` exclut dépendances, compilation, données de test et secrets. Le tag annoté `v1.0` identifie le rendu ; les workflows s’appliquent également au push de ce tag.
 
-Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal et les guides illustrés. Les versions précédentes restent consultables sous `v1.0-initial` (première version) et `v1.0-before-cli` (bonus complets, avant ajout du dashboard terminal). Le correcteur doit utiliser **`v1.0`**.
+Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés et la démo interactive. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal) et `v1.0-before-interactive` (avant les commandes de démo). Le correcteur doit utiliser **`v1.0`**.
 
 ```sh
 git log --oneline --decorate
