@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b100e"><title>PulseHub — Atelier de démonstration</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><main>
+  <header><a class="brand" href="/">ph<span>PULSEHUB / ATELIER</span></a><span class="badge">APPAREILS SIMULÉS</span></header>
+  <section class="intro"><div><p class="eyebrow">DÉMONSTRATION INTERACTIVE</p><h1>Provoque l’incident.<br><em>Observe la réaction.</em></h1><p class="lead">Choisis un appareil, déclenche un scénario et suis la réponse réelle du hub. Chaque action modifie les trames UDP du simulateur.</p></div><a id="hub-link" class="button secondary" href="http://127.0.0.1:3000" target="_blank" rel="noopener">Ouvrir le dashboard ↗</a></section>
+  <div id="connection" class="connection" role="status">Connexion au contrôleur…</div>
+  <section class="target"><div><label for="device">APPAREIL À PILOTER</label><select id="device" disabled><option>Chargement…</option></select></div><div class="target-meta"><span>Émission du simulateur</span><strong id="emission">—</strong></div><div class="target-meta"><span>Consigne de température</span><strong id="setpoint">—</strong></div><div class="target-meta"><span>Destination UDP</span><strong id="destination">—</strong></div></section>
+  <div class="workspace"><section class="controls" aria-label="Scénarios">
+    <article class="scenario"><span class="number">01 / THERMIQUE</span><h2>Faire monter la température</h2><p>Passer d’environ 43 °C à 85 °C. Avec les seuils par défaut, le hub observe l’anomalie puis déclenche l’alerte après 3 secondes.</p><button id="heat" disabled>Déclencher une surchauffe</button></article>
+    <article class="scenario"><span class="number">02 / PRÉSENCE</span><h2>Couper le signal</h2><p>Arrêter toutes les trames de cet appareil. Avec les délais par défaut : mesures périmées après 2 s, appareil hors ligne après 3 s.</p><button id="stop" disabled>Couper l’émission</button></article>
+    <article class="scenario"><span class="number">03 / CYCLE DE VIE</span><h2>Redémarrer l’appareil</h2><p>Une seconde de silence, puis séquence et uptime repartent à zéro. Le hub confirme le redémarrage sur plusieurs trames.</p><button id="restart" disabled>Redémarrer</button></article>
+    <article class="scenario restore"><span class="number">04 / RETOUR AU NOMINAL</span><h2>Rétablir cet appareil</h2><p>Reprendre l’émission à température normale, sans effacer les compteurs du hub. Idéal pour enchaîner les scénarios.</p><button id="normal" disabled>Revenir à la normale</button></article>
+  </section><aside class="observation"><div class="panel-heading"><p class="eyebrow">OBSERVÉ PAR LE HUB</p><span id="observed-id">—</span></div><h2 id="observed-status">En attente</h2><p id="observed-note" class="muted">Aucun état reçu.</p>
+    <dl><div><dt>Température reçue</dt><dd id="temperature">—</dd></div><div><dt>Dernier signal</dt><dd id="age">—</dd></div><div><dt>Redémarrages détectés</dt><dd id="restarts">—</dd></div><div><dt>Flotte opérationnelle</dt><dd id="fleet">—</dd></div></dl>
+    <div class="alert-box"><h3>Règles d’alerte</h3><ul id="alerts"><li>En attente du hub.</li></ul></div><p class="explain">Cette colonne vient de l’API du hub. Un bouton confirme une commande au simulateur ; seul l’état reçu ici confirme son effet.</p>
+  </aside></div>
+  <p id="feedback" role="status" aria-live="polite">Prêt à tester. Les scénarios concernent uniquement la simulation locale.</p>
+  <section class="journal"><div><p class="eyebrow">JOURNAL DE LA DÉMO</p><h2>Les dernières actions</h2></div><ol id="actions"><li>Aucune action pour le moment.</li></ol></section>
+  <footer><span id="traffic">Émission : en attente</span><span>Un seul simulateur actif par plage d’identifiants · CLI : <code>npm run cli</code></span></footer>
+</main></body></html>
