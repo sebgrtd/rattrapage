@@ -8,18 +8,29 @@ Le sujet indique une **soutenance individuelle de 20 minutes, sur convocation**.
 
 Un support court de quelques diapositives est facultatif d’après ce document. Il peut présenter le problème, l’architecture, les choix et les limites ; la démonstration de l’application et l’explication du code restent centrales. Une consigne complémentaire donnée sur la convocation peut préciser le format.
 
+## Diaporama prêt à présenter
+
+Le [PowerPoint](presentation/PulseHub-soutenance.pptx) contient **12 diapositives principales et 3 annexes techniques**, dans le thème noir et orange de l’application. Les notes du présentateur donnent le texte d’appui, les repères de temps, le scénario de démonstration et les références au code. Elles servent à préparer ses propres explications, pas à réciter un texte.
+
+La [version PDF](presentation/PulseHub-soutenance.pdf) reprend les diapositives pour une lecture ou une projection sans PowerPoint. Les notes orales restent dans le fichier PowerPoint. Les captures du web, de la démo et du moteur CLI montrent de vraies données du hub local, figées au moment de leur export.
+
+Le parcours proposé réserve **17 minutes à la présentation, dont 4 minutes de démo, puis 3 minutes aux questions**. Cette répartition est une proposition de préparation, pas une consigne supplémentaire du sujet. Les annexes sur le binaire, la chaîne JSON et les commandes servent seulement en cas de question.
+
 ## Parcours de 20 minutes
 
-| Temps | Démonstration | Ce qu’il faut expliquer |
+| Temps | Diapositives | Ce qu’il faut expliquer |
 | --- | --- | --- |
-| 0–2 min | Problème de régie et vue d’architecture | Centaines d’appareils, réception non fiable, besoin d’une synthèse exploitable |
-| 2–5 min | Hub vide puis simulateur nominal | Zéro à l’ouverture, apparition de 50 appareils, environ 1 000 trames/s |
-| 5–8 min | Redémarrer les deux processus, lancer la démo | Corruption, doublons, retards, pertes estimées, surchauffe temporisée, appareil arrêté |
-| 8–11 min | Ouvrir `protocol.ts` et son premier test | Offsets, longueur, endian, int16 signé et XOR F6 |
-| 11–14 min | Ouvrir `sequence.ts` puis `fleet.ts` | Différence modulaire, wrap, pertes, âge des mesures, horloge injectée |
-| 14–16 min | Historique et filtres web, aperçu du CLI avec `npm run cli` | Même hub, affichage SSE côté web et lecture HTTP côté CLI ; historique et pause distingués du direct |
-| 16–18 min | `npm run check`, CI et benchmark | Tests réellement exécutés, méthode de charge et portée des résultats |
-| 18–20 min | Compromis, limites, usage de l’IA | Détection de redémarrage et ambiguïtés restantes, chaîne configurable, historique borné, assistance déclarée |
+| 0:00–1:30 | 1–2 : contexte | Besoin de régie, 50 appareils virtuels, vraies trames UDP locales |
+| 1:30–3:00 | 3 : architecture | Responsabilités séparées, parcours du simulateur aux interfaces |
+| 3:00–4:30 | 4 : protocole | Longueur exacte, endian, int16 signé, unités et checksum |
+| 4:30–6:00 | 5 : séquences | Exemple `10, 12, 12, 11`, pertes estimées, wrap et redémarrage |
+| 6:00–7:30 | 6 : temporisations | Présence, péremption des mesures, dépassement continu |
+| 7:30–9:00 | 7–8 : interfaces | Web SSE et CLI HTTP, même état métier, pause et historique |
+| 9:00–13:00 | 9 : démonstration | Surchauffe, coupure, reprise et redémarrage pilotés |
+| 13:00–14:30 | 10 : bonus et validation | Six bonus du PDF, portée des tests, CI Linux et Windows |
+| 14:30–16:00 | 11 : benchmark | Débit UDP mesuré, critères des paliers, calcul métier isolé |
+| 16:00–17:00 | 12 : limites et IA | Ambiguïtés sans `bootId`, réseau de confiance, assistance déclarée |
+| 17:00–20:00 | Questions, annexes 13–15 si besoin | Ouvrir le code, les tests ou les détails du protocole |
 
 Pour piloter le rythme de la démonstration, utiliser le [panneau interactif](demo-interactive.md) à la place du simulateur automatique : il permet de déclencher soi-même une surchauffe, une coupure et un redémarrage. Arrêter le simulateur précédent avant de le lancer. La démo automatique reste nécessaire pour montrer spécifiquement checksum faux, duplication et désordre ; ne pas prétendre que le panneau les injecte.
 
