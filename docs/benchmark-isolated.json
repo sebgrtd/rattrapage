@@ -1,0 +1,476 @@
+{
+  "at": "2026-10-30T09:34:37.383Z",
+  "node": "v22.15.1",
+  "os": "win32 10.0.26200",
+  "cpu": "AMD Ryzen 9 5900HS with Radeon Graphics        ",
+  "secondsPerStep": 10,
+  "workers": 4,
+  "config": {
+    "udpHost": "127.0.0.1",
+    "udpPort": 9000,
+    "httpHost": "127.0.0.1",
+    "httpPort": 3000,
+    "refreshMs": 500,
+    "offlineMs": 3000,
+    "staleMs": 2000,
+    "rateWindowMs": 2000,
+    "maxDevices": 4096,
+    "maxClients": 20,
+    "historyFile": "data/history.jsonl",
+    "historyIntervalMs": 5000,
+    "historyMaxBytes": 10485760,
+    "alerts": [
+      {
+        "id": "temperature",
+        "label": "Surchauffe",
+        "metricId": 1,
+        "min": -2000,
+        "max": 7000,
+        "durationMs": 3000
+      },
+      {
+        "id": "voltage",
+        "label": "Tension anormale",
+        "metricId": 2,
+        "min": 21000,
+        "max": 26000,
+        "durationMs": 500
+      },
+      {
+        "id": "current",
+        "label": "Courant anormal",
+        "metricId": 3,
+        "min": 0,
+        "max": 8000,
+        "durationMs": 500
+      }
+    ],
+    "pipeline": [
+      {
+        "id": "selection",
+        "type": "filter",
+        "excludeDeviceIds": [],
+        "min": -32768,
+        "max": 32767
+      },
+      {
+        "id": "temperature-mean",
+        "type": "aggregate",
+        "label": "Moy. 10 s",
+        "metricId": 1,
+        "operation": "mean",
+        "windowMs": 10000,
+        "maxSamples": 256
+      },
+      {
+        "id": "physical-alerts",
+        "type": "alerts"
+      }
+    ],
+    "restart": {
+      "maxUptimeMs": 5000,
+      "maxSequence": 128,
+      "minUptimeDropMs": 250,
+      "confirmFrames": 3,
+      "confirmWindowMs": 1500,
+      "uptimeToleranceMs": 1000
+    }
+  },
+  "method": "UDP loopback with disjoint device IDs across dedicated sender processes, bounded reusable buffers, paced small bursts; one SSE reader, HTTP polling 2 Hz, history enabled. Separate synchronous core benchmark excludes encoding and I/O. Sustained: >=95% offered target and >=99.9% delivery with all received packets accepted and no observed HTTP/SSE/history error.",
+  "results": [
+    {
+      "target": 1000,
+      "workers": 4,
+      "offeredFramesPerSecond": 998,
+      "receivedFramesPerSecond": 998,
+      "sent": 9991,
+      "received": 9991,
+      "accepted": 9991,
+      "deliveryPercent": 100,
+      "inferredLost": 0,
+      "sendErrors": 0,
+      "httpErrors": 0,
+      "streamErrors": 0,
+      "slowClients": 0,
+      "historyError": "",
+      "maxRssMiB": 84,
+      "httpP95Ms": 22,
+      "generatorReachedTarget": true,
+      "receiverKeptUp": true,
+      "sustained": true,
+      "bottleneck": "none-observed",
+      "senders": [
+        {
+          "targetRate": 250,
+          "generated": 2498,
+          "sent": 2498,
+          "sendErrors": 0,
+          "activeSeconds": 10.010908299999999,
+          "elapsedSeconds": 10.011596599999999,
+          "peakPending": 5,
+          "maxBacklogFrames": 5
+        },
+        {
+          "targetRate": 250,
+          "generated": 2497,
+          "sent": 2497,
+          "sendErrors": 0,
+          "activeSeconds": 10.0079889,
+          "elapsedSeconds": 10.0086772,
+          "peakPending": 5,
+          "maxBacklogFrames": 5
+        },
+        {
+          "targetRate": 250,
+          "generated": 2499,
+          "sent": 2499,
+          "sendErrors": 0,
+          "activeSeconds": 10.011895599999999,
+          "elapsedSeconds": 10.0124177,
+          "peakPending": 5,
+          "maxBacklogFrames": 5
+        },
+        {
+          "targetRate": 250,
+          "generated": 2497,
+          "sent": 2497,
+          "sendErrors": 0,
+          "activeSeconds": 10.005429,
+          "elapsedSeconds": 10.0059571,
+          "peakPending": 6,
+          "maxBacklogFrames": 6
+        }
+      ]
+    },
+    {
+      "target": 10000,
+      "workers": 4,
+      "offeredFramesPerSecond": 9986,
+      "receivedFramesPerSecond": 9986,
+      "sent": 99924,
+      "received": 99924,
+      "accepted": 99924,
+      "deliveryPercent": 100,
+      "inferredLost": 0,
+      "sendErrors": 0,
+      "httpErrors": 0,
+      "streamErrors": 0,
+      "slowClients": 0,
+      "historyError": "",
+      "maxRssMiB": 109,
+      "httpP95Ms": 26,
+      "generatorReachedTarget": true,
+      "receiverKeptUp": true,
+      "sustained": true,
+      "bottleneck": "none-observed",
+      "senders": [
+        {
+          "targetRate": 2500,
+          "generated": 24987,
+          "sent": 24987,
+          "sendErrors": 0,
+          "activeSeconds": 10.009109,
+          "elapsedSeconds": 10.009881200000002,
+          "peakPending": 42,
+          "maxBacklogFrames": 42
+        },
+        {
+          "targetRate": 2500,
+          "generated": 24965,
+          "sent": 24965,
+          "sendErrors": 0,
+          "activeSeconds": 10.0013029,
+          "elapsedSeconds": 10.002386699999999,
+          "peakPending": 46,
+          "maxBacklogFrames": 46
+        },
+        {
+          "targetRate": 2500,
+          "generated": 24985,
+          "sent": 24985,
+          "sendErrors": 0,
+          "activeSeconds": 10.008312700000001,
+          "elapsedSeconds": 10.0091347,
+          "peakPending": 43,
+          "maxBacklogFrames": 43
+        },
+        {
+          "targetRate": 2500,
+          "generated": 24987,
+          "sent": 24987,
+          "sendErrors": 0,
+          "activeSeconds": 10.0085173,
+          "elapsedSeconds": 10.0093446,
+          "peakPending": 47,
+          "maxBacklogFrames": 47
+        }
+      ]
+    },
+    {
+      "target": 40000,
+      "workers": 4,
+      "offeredFramesPerSecond": 39949,
+      "receivedFramesPerSecond": 39940,
+      "sent": 399704,
+      "received": 399622,
+      "accepted": 399622,
+      "deliveryPercent": 99.9795,
+      "inferredLost": 82,
+      "sendErrors": 0,
+      "httpErrors": 0,
+      "streamErrors": 0,
+      "slowClients": 0,
+      "historyError": "",
+      "maxRssMiB": 140,
+      "httpP95Ms": 23,
+      "generatorReachedTarget": true,
+      "receiverKeptUp": true,
+      "sustained": true,
+      "bottleneck": "none-observed",
+      "senders": [
+        {
+          "targetRate": 10000,
+          "generated": 99958,
+          "sent": 99958,
+          "sendErrors": 0,
+          "activeSeconds": 10.0086973,
+          "elapsedSeconds": 10.0092703,
+          "peakPending": 152,
+          "maxBacklogFrames": 152
+        },
+        {
+          "targetRate": 10000,
+          "generated": 99956,
+          "sent": 99956,
+          "sendErrors": 0,
+          "activeSeconds": 10.008444099999998,
+          "elapsedSeconds": 10.009057499999999,
+          "peakPending": 170,
+          "maxBacklogFrames": 170
+        },
+        {
+          "targetRate": 10000,
+          "generated": 99891,
+          "sent": 99891,
+          "sendErrors": 0,
+          "activeSeconds": 10.0011991,
+          "elapsedSeconds": 10.0016518,
+          "peakPending": 189,
+          "maxBacklogFrames": 189
+        },
+        {
+          "targetRate": 10000,
+          "generated": 99899,
+          "sent": 99899,
+          "sendErrors": 0,
+          "activeSeconds": 10.0035469,
+          "elapsedSeconds": 10.0040525,
+          "peakPending": 159,
+          "maxBacklogFrames": 159
+        }
+      ]
+    },
+    {
+      "target": 80000,
+      "workers": 4,
+      "offeredFramesPerSecond": 79927,
+      "receivedFramesPerSecond": 66206,
+      "sent": 799648,
+      "received": 662373,
+      "accepted": 662373,
+      "deliveryPercent": 82.8331,
+      "inferredLost": 137275,
+      "sendErrors": 0,
+      "httpErrors": 0,
+      "streamErrors": 0,
+      "slowClients": 0,
+      "historyError": "",
+      "maxRssMiB": 167,
+      "httpP95Ms": 16,
+      "generatorReachedTarget": true,
+      "receiverKeptUp": false,
+      "sustained": false,
+      "bottleneck": "receiver-or-UDP-stack",
+      "senders": [
+        {
+          "targetRate": 20000,
+          "generated": 199931,
+          "sent": 199931,
+          "sendErrors": 0,
+          "activeSeconds": 10.004465,
+          "elapsedSeconds": 10.0050984,
+          "peakPending": 256,
+          "maxBacklogFrames": 361
+        },
+        {
+          "targetRate": 20000,
+          "generated": 199922,
+          "sent": 199922,
+          "sendErrors": 0,
+          "activeSeconds": 10.0083714,
+          "elapsedSeconds": 10.009032899999998,
+          "peakPending": 256,
+          "maxBacklogFrames": 344
+        },
+        {
+          "targetRate": 20000,
+          "generated": 199819,
+          "sent": 199819,
+          "sendErrors": 0,
+          "activeSeconds": 10.0020424,
+          "elapsedSeconds": 10.0025592,
+          "peakPending": 256,
+          "maxBacklogFrames": 364
+        },
+        {
+          "targetRate": 20000,
+          "generated": 199976,
+          "sent": 199976,
+          "sendErrors": 0,
+          "activeSeconds": 10.004132300000002,
+          "elapsedSeconds": 10.0047183,
+          "peakPending": 256,
+          "maxBacklogFrames": 334
+        }
+      ]
+    },
+    {
+      "target": 160000,
+      "workers": 4,
+      "offeredFramesPerSecond": 159897,
+      "receivedFramesPerSecond": 58140,
+      "sent": 1599300,
+      "received": 581525,
+      "accepted": 581525,
+      "deliveryPercent": 36.3612,
+      "inferredLost": 1017141,
+      "sendErrors": 0,
+      "httpErrors": 0,
+      "streamErrors": 0,
+      "slowClients": 0,
+      "historyError": "",
+      "maxRssMiB": 220,
+      "httpP95Ms": 15,
+      "generatorReachedTarget": true,
+      "receiverKeptUp": false,
+      "sustained": false,
+      "bottleneck": "receiver-or-UDP-stack",
+      "senders": [
+        {
+          "targetRate": 40000,
+          "generated": 399693,
+          "sent": 399693,
+          "sendErrors": 0,
+          "activeSeconds": 10.002025100000001,
+          "elapsedSeconds": 10.0025229,
+          "peakPending": 256,
+          "maxBacklogFrames": 1035
+        },
+        {
+          "targetRate": 40000,
+          "generated": 399942,
+          "sent": 399942,
+          "sendErrors": 0,
+          "activeSeconds": 10.0052824,
+          "elapsedSeconds": 10.005926500000001,
+          "peakPending": 256,
+          "maxBacklogFrames": 896
+        },
+        {
+          "targetRate": 40000,
+          "generated": 399864,
+          "sent": 399864,
+          "sendErrors": 0,
+          "activeSeconds": 10.0005722,
+          "elapsedSeconds": 10.000983100000001,
+          "peakPending": 256,
+          "maxBacklogFrames": 1450
+        },
+        {
+          "targetRate": 40000,
+          "generated": 399801,
+          "sent": 399801,
+          "sendErrors": 0,
+          "activeSeconds": 10.0004421,
+          "elapsedSeconds": 10.0011308,
+          "peakPending": 256,
+          "maxBacklogFrames": 948
+        }
+      ]
+    },
+    {
+      "target": 320000,
+      "workers": 4,
+      "offeredFramesPerSecond": 247032,
+      "receivedFramesPerSecond": 58307,
+      "sent": 2470864,
+      "received": 583202,
+      "accepted": 583202,
+      "deliveryPercent": 23.6032,
+      "inferredLost": 1886870,
+      "sendErrors": 0,
+      "httpErrors": 0,
+      "streamErrors": 0,
+      "slowClients": 0,
+      "historyError": "",
+      "maxRssMiB": 231,
+      "httpP95Ms": 14,
+      "generatorReachedTarget": false,
+      "receiverKeptUp": false,
+      "sustained": false,
+      "bottleneck": "generator-or-shared-host",
+      "senders": [
+        {
+          "targetRate": 80000,
+          "generated": 618003,
+          "sent": 618003,
+          "sendErrors": 0,
+          "activeSeconds": 10.000491899999998,
+          "elapsedSeconds": 10.000976399999999,
+          "peakPending": 256,
+          "maxBacklogFrames": 182267
+        },
+        {
+          "targetRate": 80000,
+          "generated": 614410,
+          "sent": 614410,
+          "sendErrors": 0,
+          "activeSeconds": 10.001020500000001,
+          "elapsedSeconds": 10.0015025,
+          "peakPending": 256,
+          "maxBacklogFrames": 185400
+        },
+        {
+          "targetRate": 80000,
+          "generated": 620235,
+          "sent": 620235,
+          "sendErrors": 0,
+          "activeSeconds": 10.0013509,
+          "elapsedSeconds": 10.001679399999999,
+          "peakPending": 256,
+          "maxBacklogFrames": 179856
+        },
+        {
+          "targetRate": 80000,
+          "generated": 618216,
+          "sent": 618216,
+          "sendErrors": 0,
+          "activeSeconds": 10.0059745,
+          "elapsedSeconds": 10.0063513,
+          "peakPending": 256,
+          "maxBacklogFrames": 182009
+        }
+      ]
+    }
+  ],
+  "core": {
+    "accepted": 1000000,
+    "batches": 10,
+    "framesPerBatch": 100000,
+    "processingSeconds": 3.012,
+    "framesPerSecond": 332041,
+    "slowestBatchFramesPerSecond": 302060,
+    "fastestBatchFramesPerSecond": 373409,
+    "scope": "Synchronous Fleet.receive: decode, session sequencing, default JSON pipeline and device updates. Prebuilt packets; no UDP, HTTP or persistence. Fresh fleet per batch."
+  }
+}
