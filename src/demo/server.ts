@@ -13,7 +13,10 @@ export async function startInteractiveDemo(config: DemoConfig) {
   const simulation = new InteractiveSimulation(config.devices);
   const hubUrl = `http://127.0.0.1:${config.hubPort}`;
   const files = new Map<string, { body: Buffer; type: string }>();
-  for (const [path, name, type] of [['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css']]) {
+  for (const [path, name, type] of [
+    ['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css'],
+    ['/ui.js', '../ui.js', 'text/javascript'], ['/ui.css', '../ui.css', 'text/css'], ['/favicon.svg', '../favicon.svg', 'image/svg+xml'],
+  ]) {
     files.set(path!, { body: await readFile(new URL(`../../public/demo/${name}`, import.meta.url)), type: type! });
   }
   const udp = createSocket('udp4');

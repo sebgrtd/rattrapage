@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b100e"><title>PulseHub — Atelier de démonstration</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#000000"><title>PulseHub — Atelier de démonstration</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/ui.css"><script src="/ui.js" defer></script><script src="/app.js" defer></script></head>
 <body><main>
-  <header><a class="brand" href="/">ph<span>PULSEHUB / ATELIER</span></a><span class="badge">APPAREILS SIMULÉS</span></header>
+  <header><div class="brand"><a class="wordmark" href="/" aria-label="PulseHub, accueil">Pulse<span class="hub">Hub</span></a><span class="brand-caption">ATELIER</span></div><span class="badge">APPAREILS SIMULÉS</span></header>
   <section class="intro"><div><p class="eyebrow">DÉMONSTRATION INTERACTIVE</p><h1>Provoque l’incident.<br><em>Observe la réaction.</em></h1><p class="lead">Choisis un appareil, déclenche un scénario et suis la réponse réelle du hub. Chaque action modifie les trames UDP du simulateur.</p></div><a id="hub-link" class="button secondary" href="http://127.0.0.1:3000" target="_blank" rel="noopener">Ouvrir le dashboard ↗</a></section>
   <div id="connection" class="connection" role="status">Connexion au contrôleur…</div>
   <section class="target"><div><label for="device">APPAREIL À PILOTER</label><select id="device" disabled><option>Chargement…</option></select></div><div class="target-meta"><span>Émission du simulateur</span><strong id="emission">—</strong></div><div class="target-meta"><span>Consigne de température</span><strong id="setpoint">—</strong></div><div class="target-meta"><span>Destination UDP</span><strong id="destination">—</strong></div></section>

@@ -38,11 +38,11 @@ function renderTable() {
       const unit = m.id === 1 ? ' °C' : m.id === 2 ? ' V' : ' A';
       const td = element('td', m.value === null ? '—' : format.format(m.value / (m.id === 1 ? 100 : 1000)) + unit,
         m.stale || d.status === 'offline' ? 'stale-value' : '');
-      td.title = m.ageMs === null ? 'Aucune mesure reçue' : `Âge de la mesure : ${age(m.ageMs)}${m.stale ? ' (périmée)' : ''}`;
+      td.dataset.tooltip = m.ageMs === null ? 'Aucune mesure reçue' : `Âge de la mesure : ${age(m.ageMs)}${m.stale ? ' (périmée)' : ''}`;
       for (const a of (d.aggregates ?? []).filter(a => a.metricId === m.id)) {
         const value = a.stale || d.status === 'offline' ? '—' : format.format(a.value / (m.id === 1 ? 100 : 1000)) + unit;
         const summary = element('small', `${a.label} : ${value}`, 'metric-secondary');
-        summary.title = `${a.samples} échantillons ; fenêtre ${a.windowMs / 1000} s`;
+        summary.dataset.tooltip = `${a.samples} échantillons ; fenêtre ${a.windowMs / 1000} s`;
         td.append(summary);
       }
       tr.append(td);
@@ -51,6 +51,7 @@ function renderTable() {
     fragment.append(tr);
   }
   $('devices').replaceChildren(fragment);
+  window.PulseUI?.refreshTooltip();
   $('empty-fleet').hidden = devices.length > 0;
   if (!devices.length) {
     if (current.devices.length) $('empty-fleet').replaceChildren(element('strong', 'Aucun appareil ne correspond au filtre.'));

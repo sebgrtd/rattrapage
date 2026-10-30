@@ -41,6 +41,11 @@ test('HTTP control → UDP → hub confirms alert, outage, recovery and reboot; 
   const device = () => hub.snapshot().devices.find(d => d.id === 1);
   await until(() => hub.snapshot().totals.online === 2 && demo.snapshot().hub.connected);
   assert.equal((await fetch(base)).status, 200);
+  for (const [path, type] of [['/ui.js', 'text/javascript'], ['/ui.css', 'text/css'], ['/favicon.svg', 'image/svg+xml']]) {
+    const asset = await fetch(base + path);
+    assert.equal(asset.status, 200); assert.ok(asset.headers.get('content-type')?.startsWith(type!));
+    assert.ok((await asset.text()).length > 0);
+  }
   const initial = hub.snapshot().counters.received;
   assert.equal((await action('heat', { Origin: 'https://external.example' })).status, 403);
   assert.equal((await action('heat', { 'Content-Type': 'text/plain' })).status, 415);
