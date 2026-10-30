@@ -29,6 +29,11 @@ test('real UDP → decoder → fleet → HTTP/SSE; oversized packet, reconnect a
   const initial = await fetch(base + '/api/state').then(r => r.json()) as ReturnType<typeof hub.snapshot>;
   assert.equal(initial.counters.received, 0);
   const page = await fetch(base); assert.equal(page.status, 200); assert.match(await page.text(), /La scène, sous contrôle/);
+  for (const [path, type] of [['/ui.js', 'text/javascript'], ['/ui.css', 'text/css'], ['/favicon.svg', 'image/svg+xml']]) {
+    const asset = await fetch(base + path);
+    assert.equal(asset.status, 200); assert.ok(asset.headers.get('content-type')?.startsWith(type!));
+    assert.ok((await asset.text()).length > 0);
+  }
   assert.equal((await fetch(base + '/missing')).status, 404);
   assert.equal((await fetch(base, { method: 'POST' })).status, 405);
   await send(socket, port, Buffer.alloc(600));

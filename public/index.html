@@ -2,13 +2,13 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b100f"><title>PulseHub — Régie live</title><link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+  <meta name="theme-color" content="#000000"><title>PulseHub — Régie live</title><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/ui.css"><script src="/ui.js" defer></script><script src="/app.js" defer></script>
 </head>
 <body>
   <aside class="rail"><a class="logo" href="/" aria-label="PulseHub, accueil">p<span>h</span></a><span class="rail-label">SUPERVISION</span><span class="rail-bottom">V1.0</span></aside>
   <main>
-    <header><div class="brand">PULSEHUB <span>CONTROL ROOM</span></div><div class="connection"><i id="connection-dot"></i><span id="connection" role="status">Connexion…</span><span class="divider">/</span><span id="clock">--:--:--</span></div></header>
+    <header><div class="brand"><a class="wordmark" href="/" aria-label="PulseHub, accueil">Pulse<span class="hub">Hub</span></a><span class="brand-caption">CONTROL ROOM</span></div><div class="connection"><i id="connection-dot"></i><span id="connection" role="status">Connexion…</span><span class="divider">/</span><span id="clock">--:--:--</span></div></header>
     <section class="page-heading"><div><p class="eyebrow">TÉLÉMÉTRIE / VUE D’ENSEMBLE</p><h1>La scène, sous contrôle<span>.</span></h1><p class="subtitle" id="description">En attente du premier signal. Lancez le simulateur pour connecter la flotte.</p></div><button id="history-button" class="button">Consulter l’historique <span>↗</span></button></section>
     <section id="history-panel" class="history-panel" hidden><label for="history-select">Instantané enregistré</label><select id="history-select"><option value="">Chargement…</option></select><button id="live-button" class="button">Revenir au direct</button><span id="history-message" role="status"></span></section>
     <div id="warning" class="warning" role="status" hidden></div>

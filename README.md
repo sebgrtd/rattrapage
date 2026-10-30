@@ -61,7 +61,7 @@ Les deux interfaces affichent **les données du même hub** et peuvent être ouv
 2. Ouvrir **http://127.0.0.1:3000**. Le hub fournit directement la page web, sans serveur front séparé.
 3. Lire le bandeau **En direct** : le navigateur reçoit une synthèse par SSE toutes les 500 ms par défaut. En cas de coupure, il indique **Déconnecté · données figées** et tente de se reconnecter.
 
-La capture en tête de ce README montre la vue d’ensemble réelle de la démo. Les chiffres varient pendant l’exécution.
+La capture en tête de ce README montre la démo interactive avec PH-009 en surchauffe et PH-007 hors ligne. Les chiffres varient pendant l’exécution. L’identité web associe noir `#000000`, orange `#ff9900` et blanc, avec « Hub » en cartouche orange. Les états gardent leurs couleurs et libellés dédiés pour distinguer fonctionnement normal, alerte et coupure.
 
 | Zone à l’écran | Comment la lire ou l’utiliser |
 | --- | --- |
@@ -77,6 +77,10 @@ La capture en tête de ce README montre la vue d’ensemble réelle de la démo.
 ![Recherche de PH-009 dans le navigateur, avec moyenne de température et redémarrage détecté](docs/web-device.png)
 
 L’historique est enregistré toutes les 5 secondes par défaut : patienter si aucun instantané n’est encore disponible. Consulter l’historique ne suspend pas la réception du hub. Sur un petit écran, faire défiler le tableau horizontalement pour accéder à toutes les colonnes.
+
+**Composants personnalisés.** Les menus d’état, d’historique et d’appareil utilisent le même composant, sans menu système. Ouvrir avec un clic, `Entrée`, `Espace` ou `↓`, parcourir avec `↑` / `↓` (`Début` / `Fin` pour les extrémités), puis valider avec `Entrée`. `Échap` annule et rend le focus au bouton ; `Tab` ferme le menu et poursuit la navigation. Un clic à l’extérieur ferme aussi le menu. Les listes longues proposent une recherche : saisir `009` dans l’atelier ou une heure dans l’historique. La croix de la recherche de flotte efface le filtre. Survoler une mesure ou sa moyenne affiche une infobulle personnalisée avec son âge ou sa fenêtre d’agrégation.
+
+Les composants partagés sont dans `public/ui.js` et `public/ui.css`, servis par les deux interfaces web. Les éléments `select` masqués conservent les valeurs et événements utilisés par les applications ; les boutons, listes et champs visibles portent les rôles et états ARIA. Sans JavaScript, le suivi en direct et les commandes ne fonctionnent pas.
 
 ### Tableau de bord terminal
 
@@ -349,7 +353,7 @@ Bonus implémentés : chaîne de traitement JSON extensible, alertes avec durée
 
 Le dépôt a été créé spécifiquement pour ce projet. L’historique contient des commits de progression réels : protocole, métier, application, validation et documentation. Aucun historique antidaté, aucun autre projet repris. `.gitignore` exclut dépendances, compilation, données de test et secrets. Le tag annoté `v1.0` identifie le rendu ; les workflows s’appliquent également au push de ce tag.
 
-Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés et la démo interactive. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal) et `v1.0-before-interactive` (avant les commandes de démo). Le correcteur doit utiliser **`v1.0`**.
+Le tag `v1.0` a été actualisé avant remise pour inclure l’interface terminal, les guides illustrés, la démo interactive et les composants web personnalisés. Les versions précédentes restent consultables sous `v1.0-initial` (première version), `v1.0-before-cli` (avant le dashboard terminal), `v1.0-before-interactive` (avant les commandes de démo) et `v1.0-before-custom-ui` (avant le thème noir/orange et les menus personnalisés). Le correcteur doit utiliser **`v1.0`**.
 
 ```sh
 git log --oneline --decorate

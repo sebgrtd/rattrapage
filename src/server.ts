@@ -16,7 +16,10 @@ export async function startHub(config: Config) {
   const snapshot = () => ({ ...fleet.snapshot(), at: new Date().toISOString(),
     service: { transportErrors, slowClients, clients: clients.size, history: { ...history.status }, historyEnabled: Boolean(config.historyFile) } });
   const files = new Map<string, { body: Buffer; type: string }>();
-  for (const [path, file, type] of [['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css'], ['/favicon.svg', 'favicon.svg', 'image/svg+xml']]) {
+  for (const [path, file, type] of [
+    ['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css'],
+    ['/ui.js', 'ui.js', 'text/javascript'], ['/ui.css', 'ui.css', 'text/css'], ['/favicon.svg', 'favicon.svg', 'image/svg+xml'],
+  ]) {
     files.set(path!, { body: await readFile(new URL(`../public/${file}`, import.meta.url)), type: type! });
   }
   const http = createServer((req, res) => {
