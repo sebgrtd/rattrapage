@@ -13,6 +13,7 @@
     "simulator": "tsx src/simulator.ts",
     "demo": "tsx src/simulator.ts --checksum-rate 0.03 --duplicate-rate 0.04 --reorder-rate 0.04 --anomaly-rate 0.15 --stop-device 7 --stop-after 8 --restart-device 9 --restart-after 12 --restart-pause 1",
     "demo:restart": "tsx src/simulator.ts --restart-device 7 --restart-after 5 --restart-pause 1",
+    "demo:interactive": "tsx src/demo.ts",
     "test": "node --import tsx --test test/*.test.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
