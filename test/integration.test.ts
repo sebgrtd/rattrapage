@@ -94,3 +94,22 @@ test('a damaged telemetry cannot overwrite an accepted sample over UDP', async t
   assert.equal(hub.snapshot().devices[0]!.metrics[0]!.value, 4250);
   assert.equal(hub.snapshot().counters.invalid, 1);
 });
+
+test('large fleet SSE snapshots drain normally without reconnecting a healthy browser', { timeout: 8000 }, async t => {
+  const hub = await startHub(config()); t.after(() => hub.close());
+  for (let id = 1; id <= 100; id++) {
+    hub.fleet.receive(encode({ type: 1, deviceId: id, seq: 1, uptimeMs: 50, measurements: [{ metricId: 1, value: 4250 }, { metricId: 2, value: 24000 }, { metricId: 3, value: 3000 }] }));
+  }
+  const base = `http://127.0.0.1:${(hub.http.address() as AddressInfo).port}`;
+  const response = await fetch(base + '/events', { signal: AbortSignal.timeout(5000) });
+  const reader = response.body!.getReader();
+  let events = ''; let count = 0;
+  while (count < 4) {
+    const chunk = await reader.read(); assert.equal(chunk.done, false);
+    events += new TextDecoder().decode(chunk.value);
+    count = events.split('\n\n').length - 1;
+  }
+  assert.equal(hub.snapshot().service.slowClients, 0);
+  assert.equal(hub.snapshot().service.clients, 1);
+  await reader.cancel();
+});

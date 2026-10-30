@@ -40,8 +40,9 @@ function renderTable() {
   }
   $('devices').replaceChildren(fragment);
   $('empty-fleet').hidden = devices.length > 0;
-  if (current.devices.length && !devices.length) {
-    $('empty-fleet').replaceChildren(element('strong', 'Aucun appareil ne correspond au filtre.'));
+  if (!devices.length) {
+    if (current.devices.length) $('empty-fleet').replaceChildren(element('strong', 'Aucun appareil ne correspond au filtre.'));
+    else $('empty-fleet').replaceChildren(element('span', '⌁'), element('strong', 'Aucun appareil connecté'), element('p', 'Démarrez npm run simulator dans un second terminal.'));
   }
   set('visible-count', `${devices.length} appareil${devices.length > 1 ? 's' : ''} affiché${devices.length > 1 ? 's' : ''}`);
 }

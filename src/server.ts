@@ -16,7 +16,7 @@ export async function startHub(config: Config) {
   const snapshot = () => ({ ...fleet.snapshot(), at: new Date().toISOString(),
     service: { transportErrors, slowClients, clients: clients.size, history: { ...history.status }, historyEnabled: Boolean(config.historyFile) } });
   const files = new Map<string, { body: Buffer; type: string }>();
-  for (const [path, file, type] of [['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css']]) {
+  for (const [path, file, type] of [['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css'], ['/favicon.svg', 'favicon.svg', 'image/svg+xml']]) {
     files.set(path!, { body: await readFile(new URL(`../public/${file}`, import.meta.url)), type: type! });
   }
   const http = createServer((req, res) => {
@@ -61,8 +61,10 @@ export async function startHub(config: Config) {
     if (!clients.size) return;
     const event = `data: ${JSON.stringify(snapshot())}\n\n`;
     for (const client of clients) {
-      // Disconnect a slow reader instead of accumulating an unbounded buffer.
-      if (!client.write(event)) { slowClients++; clients.delete(client); client.destroy(); }
+      // A single large snapshot may exceed the high-water mark normally.
+      // Only disconnect when the PREVIOUS snapshot still has not drained.
+      if (client.writableNeedDrain) { slowClients++; clients.delete(client); client.destroy(); }
+      else client.write(event);
     }
   }, config.refreshMs);
   const persist = setInterval(() => history.record(fleet.snapshot()), config.historyIntervalMs);
