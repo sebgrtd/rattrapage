@@ -1,6 +1,6 @@
 # PulseHub
 
-Hub de télémétrie UDP pour une régie événementielle. Réception de PulseHub v1, suivi des appareils, détection des pertes et tableau de bord web local. Projet individuel réalisé pour le sujet Master Tech-Lead/CTO, avec assistance IA déclarée ci-dessous.
+Hub de télémétrie UDP pour une régie événementielle. Réception de PulseHub v1, suivi des appareils, détection des pertes et tableaux de bord web et terminal locaux. Projet individuel réalisé pour le sujet Master Tech-Lead/CTO, avec assistance IA déclarée ci-dessous.
 
 ![Tableau de bord PulseHub avec 50 appareils et défauts injectés](docs/dashboard.png)
 
@@ -11,12 +11,14 @@ Prérequis : **Node.js 22.15 ou supérieur**, npm et Git. Version utilisée pour
 ```sh
 git clone https://github.com/sebgrtd/rattrapage.git
 cd rattrapage
-git checkout v1.0
+git checkout main
 npm ci
 npm run hub
 ```
 
 Ouvrir **http://127.0.0.1:3000**. Le hub sert lui-même l’interface : aucune commande front supplémentaire. Au démarrage, tous les compteurs de réception et de flotte sont à **zéro**. L’historique d’une précédente session reste accessible séparément.
+
+`main` contient également l’interface terminal ajoutée après le rendu `v1.0`. Pour reproduire exactement ce rendu figé, utiliser `git checkout v1.0` avant `npm ci` ; le CLI n’y est pas inclus.
 
 Dans un second terminal, depuis le même dossier :
 
@@ -48,6 +50,18 @@ npm run check
 `check` exécute lint, vérification TypeScript stricte, tests unitaires/intégration et compilation. Pour lancer le code compilé : `npm run build`, puis `node dist/hub.js` ou `node dist/simulator.js`. Les dossiers `config/` et `public/` restent nécessaires à côté de `dist/`.
 
 ## Commandes et configuration
+
+### Tableau de bord terminal
+
+Avec le hub déjà lancé, ouvrir un terminal supplémentaire et lancer **`npm run cli`**. Le CLI reprend la flotte, le débit, les alertes et les agrégations du même serveur, avec navigation au clavier, recherche, filtres, pause et historique.
+
+`↑↓` sélectionne un appareil, `/` lance une recherche, `f` change le filtre, `Espace` fige l’affichage, `h` ouvre l’historique, `?` affiche l’aide et `q` quitte. Préférer une fenêtre de 130 × 42 caractères.
+
+Le [guide terminal](docs/terminal.md) détaille les raccourcis, les options, la reconnexion et la sortie texte `--once`.
+
+![Rendu terminal avec les données du hub local](docs/terminal.png)
+
+### Hub et simulateur
 
 ```sh
 npm run hub -- --udp-port 9001 --http-port 3001
@@ -193,12 +207,12 @@ Les liens ci-dessous sont des **permaliens sur un commit précis**, générés �
 <!-- PRINCIPLES:START -->
 | Principe | Preuve concrète | Code immuable |
 | --- | --- | --- |
-| KISS / traitement explicite | Le décodeur valide chaque champ avec Buffer et retourne un résultat typé ; aucune couche de parsing générique. | [src/protocol.ts, lignes 22–48](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/protocol.ts#L22-L48) |
-| Séparation des responsabilités | Le séquenceur décide uniquement de l’ordre et des trous, indépendamment du réseau, des alertes et de l’affichage. | [src/sequence.ts, lignes 3–74](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/sequence.ts#L3-L74) |
-| Injection de dépendance | Fleet reçoit sa configuration et son horloge ; les tests avancent le temps sans attendre. | [src/fleet.ts, lignes 11–35](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/fleet.ts#L11-L35) |
-| Règles pilotées par les données | Un même moteur évalue les limites et durées de chaque règle JSON ; ajouter une règle ne demande pas de nouvelle condition spécifique. | [src/processing/alerts.ts, lignes 5–28](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/processing/alerts.ts#L5-L28) |
-| Extension par composition | Les étapes implémentent un contrat commun ; une nouvelle factory rejoint le registre sans modifier les étapes existantes. | [src/processing/pipeline.ts, lignes 9–40](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/processing/pipeline.ts#L9-L40) |
-| Frontière réseau / métier | Les adaptateurs UDP et HTTP délèguent le traitement métier à Fleet et diffusent des instantanés. | [src/server.ts, lignes 9–85](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/server.ts#L9-L85) |
+| KISS / traitement explicite | Le décodeur valide chaque champ avec Buffer et retourne un résultat typé ; aucune couche de parsing générique. | [src/protocol.ts, lignes 22–48](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/protocol.ts#L22-L48) |
+| Séparation des responsabilités | Le séquenceur décide uniquement de l’ordre et des trous, indépendamment du réseau, des alertes et de l’affichage. | [src/sequence.ts, lignes 3–74](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/sequence.ts#L3-L74) |
+| Injection de dépendance | Fleet reçoit sa configuration et son horloge ; les tests avancent le temps sans attendre. | [src/fleet.ts, lignes 11–35](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/fleet.ts#L11-L35) |
+| Règles pilotées par les données | Un même moteur évalue les limites et durées de chaque règle JSON ; ajouter une règle ne demande pas de nouvelle condition spécifique. | [src/processing/alerts.ts, lignes 5–28](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/processing/alerts.ts#L5-L28) |
+| Extension par composition | Les étapes implémentent un contrat commun ; une nouvelle factory rejoint le registre sans modifier les étapes existantes. | [src/processing/pipeline.ts, lignes 9–40](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/processing/pipeline.ts#L9-L40) |
+| Frontière réseau / métier | Les adaptateurs UDP et HTTP délèguent le traitement métier à Fleet et diffusent des instantanés. | [src/server.ts, lignes 9–85](https://github.com/sebgrtd/rattrapage/blob/7bf504c6823f94ebcb3df9e76916a35ae5aa6c26/src/server.ts#L9-L85) |
 <!-- PRINCIPLES:END -->
 
 Pas de revendication de conformité intégrale à SOLID : l’objectif est une séparation utile et explicable, dans la contrainte d’une journée. Le registre contient uniquement le dernier état par appareil ; le débit utilise un nombre borné de compartiments. Un client SSE lent est déconnecté plutôt que de laisser grossir indéfiniment sa file de sortie.
@@ -217,7 +231,7 @@ Pas de revendication de conformité intégrale à SOLID : l’objectif est une s
 
 ## Qualité et validation
 
-Les 33 tests couvrent les trames de référence, les limites des entiers signés/non signés, les erreurs de structure, 10 000 datagrammes arbitraires déterministes, le séquencement, le wrap uint32, les seuils temporels, la fraîcheur par métrique, les heartbeats, l’arrêt d’un appareil, la capacité du registre, l’historique et sa rotation, les ports occupés, les API HTTP/SSE (dont la diffusion de grandes synthèses sans reconnexion) les **cinq défauts du simulateur sur de vrais sockets UDP**, les redémarrages avec protection contre un paquet isolé, les fenêtres glissantes, les filtres et l’ajout d’un type de traitement sans modification des étapes existantes.
+Les 37 tests couvrent les trames de référence, les limites des entiers signés/non signés, les erreurs de structure, 10 000 datagrammes arbitraires déterministes, le séquencement, le wrap uint32, les seuils temporels, la fraîcheur par métrique, les heartbeats, l’arrêt d’un appareil, la capacité du registre, l’historique et sa rotation, les ports occupés, les API HTTP/SSE (dont la diffusion de grandes synthèses sans reconnexion), les **cinq défauts du simulateur sur de vrais sockets UDP**, les redémarrages avec protection contre un paquet isolé, les fenêtres glissantes, les filtres et l’ajout d’un type de traitement sans modification des étapes existantes. Les tests du CLI vérifient les dimensions du rendu, les filtres, la séparation des données live/figées/historiques, la suppression des séquences de contrôle et une lecture HTTP réelle via `--once`.
 
 La CI exécute `npm ci` puis `npm run check` à chaque push et pull request, sur Linux et Windows avec Node 22. Les contrôles manuels complémentaires sont décrits dans [docs/acceptation.md](docs/acceptation.md). L’interface a aussi été contrôlée avec un navigateur automatisé sur desktop et mobile ; la capture ci-dessus est issue de la vraie démo, pas d’un jeu de données factice.
 
