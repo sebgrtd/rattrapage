@@ -4,6 +4,8 @@ Hub de télémétrie UDP pour une régie événementielle. Réception de PulseHu
 
 ![Tableau de bord PulseHub avec 50 appareils et défauts injectés](docs/dashboard.png)
 
+Accès rapide : [démarrage](#démarrer-en-moins-de-cinq-minutes) · [interface web](#interface-web) · [interface CLI](#tableau-de-bord-terminal) · [configuration](#commandes-et-configuration).
+
 ## Démarrer en moins de cinq minutes
 
 Prérequis : **Node.js 22.15 ou supérieur**, npm et Git. Version utilisée pour la validation : Node 22.15.1, Windows 11. Aucune base de données, aucun compte externe, aucun secret et aucune dépendance applicative d’exécution. Les outils de développement sont verrouillés dans `package-lock.json`.
@@ -49,19 +51,66 @@ npm run check
 
 `check` exécute lint, vérification TypeScript stricte, tests unitaires/intégration et compilation. Pour lancer le code compilé : `npm run build`, puis `node dist/hub.js` ou `node dist/simulator.js`. Les dossiers `config/` et `public/` restent nécessaires à côté de `dist/`.
 
-## Commandes et configuration
+## Utiliser les interfaces
+
+Les deux interfaces affichent **les données du même hub** et peuvent être ouvertes simultanément. Dans la démo, les 50 appareils sont simulés : ils envoient de vraies trames UDP sur la machine locale. Le hub les valide, calcule les états et expose la synthèse ; les interfaces ne génèrent pas les mesures. Il n’y a pas de recherche automatique d’appareils sur le réseau.
+
+### Interface web
+
+1. Lancer `npm run hub`, puis `npm run demo` dans un second terminal, depuis le dossier du projet. Utiliser `npm run simulator` à la place de `demo` pour un flux sans défauts injectés.
+2. Ouvrir **http://127.0.0.1:3000**. Le hub fournit directement la page web, sans serveur front séparé.
+3. Lire le bandeau **En direct** : le navigateur reçoit une synthèse par SSE toutes les 500 ms par défaut. En cas de coupure, il indique **Déconnecté · données figées** et tente de se reconnecter.
+
+La capture en tête de ce README montre la vue d’ensemble réelle de la démo. Les chiffres varient pendant l’exécution.
+
+| Zone à l’écran | Comment la lire ou l’utiliser |
+| --- | --- |
+| **Appareils détectés / Opérationnels / À surveiller / Hors ligne** | Résumé de toute la flotte. « À surveiller » regroupe les alertes actives, les anomalies encore en observation et les mesures périmées. |
+| **Santé de la réception** | Débit UDP reçu, graphe récent, trames invalides, pertes estimées et doublons/retards. Les compteurs restent cumulés depuis le démarrage du hub ; les pertes sont des trous de séquence estimés. |
+| **Points d’attention** | Appareils nécessitant une vérification, avec les hors-ligne en priorité et le motif des alertes. |
+| **Flotte d’équipements** | Dernière température en °C, tension en V, courant en A, âge du signal et pertes de chaque appareil. Une ancienne mesure reste visible en grisé. Les agrégats configurés apparaissent sous les mesures, les redémarrages sous l’identifiant. |
+| **Rechercher un appareil / filtre d’état** | Saisir `009` ou `PH-009` pour isoler un appareil, ou choisir « À surveiller », « Opérationnels » ou « Hors ligne ». Ces filtres concernent la table ; les compteurs du haut restent ceux de la flotte entière. |
+| **Consulter l’historique** | Ouvrir le panneau, puis choisir une date dans « Instantané enregistré ». Le bandeau passe en **Lecture historique** ; table, compteurs et alertes affichent l’instant choisi. Cliquer **Revenir au direct** pour reprendre le suivi courant. |
+
+**Exemple : retrouver un appareil redémarré.** Après 13 secondes de démo, rechercher `009`. La ligne PH-009 indique un redémarrage et une moyenne de température recalculée depuis sa nouvelle session. Dans la même démo, PH-007 devient hors ligne après son arrêt. Effacer la recherche pour retrouver toute la flotte.
+
+![Recherche de PH-009 dans le navigateur, avec moyenne de température et redémarrage détecté](docs/web-device.png)
+
+L’historique est enregistré toutes les 5 secondes par défaut : patienter si aucun instantané n’est encore disponible. Consulter l’historique ne suspend pas la réception du hub. Sur un petit écran, faire défiler le tableau horizontalement pour accéder à toutes les colonnes.
 
 ### Tableau de bord terminal
 
 Avec le hub déjà lancé, ouvrir un terminal supplémentaire et lancer **`npm run cli`**. Le CLI reprend la flotte, le débit, les alertes et les agrégations du même serveur, avec navigation au clavier, recherche, filtres, pause et historique.
 
-`↑↓` sélectionne un appareil, `/` lance une recherche, `f` change le filtre, `Espace` fige l’affichage, `h` ouvre l’historique, `?` affiche l’aide et `q` quitte. Préférer une fenêtre de 130 × 42 caractères.
+```sh
+npm run cli
+```
+
+Préférer une fenêtre de **130 × 42 caractères**. Les cartes et le graphe résument la flotte ; la table se parcourt au clavier et le panneau du bas affiche les détails de l’appareil sélectionné : séquence, uptime, redémarrages, agrégations et alertes. Le CLI interroge `/api/state`, puis attend 500 ms avant la prochaine requête. Il retrouve automatiquement le hub après une coupure.
+
+| Touche | Action |
+| --- | --- |
+| `↑` / `↓` | Sélectionner un appareil et lire son détail en bas |
+| `Page précédente` / `Page suivante` ou `p` / `n` | Parcourir les pages de la flotte |
+| `/`, puis `009`, puis `Entrée` | Rechercher PH-009 ; `Échap` efface la recherche hors saisie |
+| `f` | Passer de tous les appareils aux états à surveiller, hors ligne ou opérationnels |
+| `Espace` | Figer / reprendre l’affichage ; le hub continue de recevoir |
+| `h` | Ouvrir l’historique / revenir au direct |
+| `←` / `→` ou `[` / `]` | Parcourir les instantanés historiques |
+| `?` | Afficher / masquer l’aide |
+| `q` / `Ctrl+C` | Quitter le CLI, sans arrêter le hub ni le simulateur |
+
+**EN DIRECT**, **PAUSE / DONNÉES FIGÉES**, **HISTORIQUE** et **HUB DÉCONNECTÉ** distinguent les modes. `~` signale une mesure périmée ; `—` indique une valeur indisponible. La colonne « MOY. TEMP. » affiche la première moyenne de température configurée, dont le libellé et le nombre d’échantillons sont précisés dans le détail.
 
 Le [guide terminal](docs/terminal.md) détaille les raccourcis, les options, la reconnexion et la sortie texte `--once`.
 
 ![Rendu terminal avec les données du hub local](docs/terminal.png)
 
-### Hub et simulateur
+Cet aperçu est exporté par le même moteur de rendu que le CLI, avec les données de la démo locale au moment de la capture. Les deux images web sont des captures du navigateur. Elles ne représentent pas des appareils physiques connectés.
+
+Pour produire un instantané texte sans interaction : `npm.cmd run cli -- --once --no-color`. Pour utiliser un autre hub : `npm.cmd run cli -- --url http://127.0.0.1:3010`. Le CLI se trouve sur `main` ; il n’est pas inclus dans le tag historique `v1.0`.
+
+## Commandes et configuration
 
 ```sh
 npm run hub -- --udp-port 9001 --http-port 3001
@@ -142,8 +191,10 @@ flowchart LR
     DROP --> SNAP
     FLEET --> SNAP
     SNAP -->|SSE toutes les 500 ms| WEB[Tableau de bord local]
+    SNAP -->|API HTTP interrogée par le CLI| TERM[Tableau de bord terminal]
     SNAP -->|toutes les 5 s| DISK[Historique JSONL borné]
     DISK -->|API historique| WEB
+    DISK -->|API historique| TERM
 ```
 
 | Fichier | Responsabilité |
@@ -156,6 +207,7 @@ flowchart LR
 | `src/server.ts` | Adaptateurs UDP, HTTP, SSE et cycle de vie |
 | `src/history.ts` | Écriture, rotation et lecture des instantanés |
 | `src/hub.ts` | Point d’entrée CLI du hub |
+| `src/cli.ts`, `src/terminal/` | Tableau de bord terminal, lecture HTTP, navigation clavier et rendu ANSI |
 | `src/simulator.ts` | Appareils virtuels et injection des défauts |
 | `public/` | Affichage, filtres, recherche et consultation de l’historique |
 
