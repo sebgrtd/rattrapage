@@ -172,7 +172,7 @@
     }
   }
   document.querySelectorAll('select').forEach(select => new SelectControl(select));
-  document.addEventListener('pointerdown', event => {
+  document.addEventListener('click', event => {
     if (opened && !opened.popup.contains(event.target) && !opened.wrapper.contains(event.target)) opened.close();
   });
   document.addEventListener('focusin', event => {
