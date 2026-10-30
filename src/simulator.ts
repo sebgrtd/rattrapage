@@ -4,12 +4,12 @@ import { numberInRange } from './config.js';
 import { encode } from './protocol.js';
 
 async function main() {
-  const strings = ['host', 'port', 'devices', 'hz', 'duration', 'seed', 'checksum-rate', 'duplicate-rate', 'reorder-rate', 'anomaly-rate', 'stop-device', 'stop-after', 'heartbeat-every'];
+  const strings = ['host', 'port', 'devices', 'hz', 'duration', 'seed', 'checksum-rate', 'duplicate-rate', 'reorder-rate', 'anomaly-rate', 'stop-device', 'stop-after', 'heartbeat-every', 'restart-device', 'restart-after', 'restart-pause'];
   const options: Record<string, { type: 'string' | 'boolean' }> = Object.fromEntries(strings.map(key => [key, { type: 'string' as const }]));
   options.help = { type: 'boolean' };
   const { values } = parseArgs({ options });
   if (values.help) {
-    console.log('npm run simulator -- [--host 127.0.0.1] [--port 9000] [--devices 50] [--hz 20]\n[--duration 0] [--seed 42] [--checksum-rate 0] [--duplicate-rate 0]\n[--reorder-rate 0] [--anomaly-rate 0] [--stop-device 0] [--stop-after 8] [--heartbeat-every 20]\nLes taux sont compris entre 0 et 1. duration=0: illimité. anomaly-rate: fraction des appareils en défaut continu.'); return;
+    console.log('npm run simulator -- [--host 127.0.0.1] [--port 9000] [--devices 50] [--hz 20]\n[--duration 0] [--seed 42] [--checksum-rate 0] [--duplicate-rate 0]\n[--reorder-rate 0] [--anomaly-rate 0] [--stop-device 0] [--stop-after 8] [--heartbeat-every 20]\n[--restart-device 0] [--restart-after 8] [--restart-pause 1]\nLes taux sont compris entre 0 et 1. duration=0: illimité. anomaly-rate: fraction des appareils en défaut continu.'); return;
   }
   const number = (key: string, fallback: number, min: number, max: number, integer = true) => numberInRange(values[key] ?? fallback, key, min, max, integer);
   const host = String(values.host ?? '127.0.0.1');
@@ -20,12 +20,16 @@ async function main() {
   const rates = { checksum: number('checksum-rate', 0, 0, 1, false), duplicate: number('duplicate-rate', 0, 0, 1, false), reorder: number('reorder-rate', 0, 0, 1, false), anomaly: number('anomaly-rate', 0, 0, 1, false) };
   const stopDevice = number('stop-device', 0, 0, count);
   const stopAfter = number('stop-after', 8, 0, 86400, false);
+  const restartDevice = number('restart-device', 0, 0, count);
+  const restartAfter = number('restart-after', 8, 0, 86400, false);
+  const restartPause = number('restart-pause', 1, 0, 3600, false);
+  if (restartDevice !== 0 && restartDevice === stopDevice) throw new Error('Un même appareil ne peut pas être arrêté et redémarré dans ce scénario.');
   const heartbeatEvery = number('heartbeat-every', 20, 0, 1000000);
   let seed = number('seed', 42, 0, 0xffffffff);
   const random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 0x100000000);
   const socket = createSocket('udp4');
-  const counters = { generated: 0, sent: 0, sendErrors: 0, corrupted: 0, duplicates: 0, reordered: 0, skippedTicks: 0 };
-  const devices = Array.from({ length: count }, (_, i) => ({ id: i + 1, seq: 0, anomalous: (i / count) < rates.anomaly, held: undefined as Buffer | undefined }));
+  const counters = { generated: 0, sent: 0, sendErrors: 0, corrupted: 0, duplicates: 0, reordered: 0, skippedTicks: 0, restarts: 0 };
+  const devices = Array.from({ length: count }, (_, i) => ({ id: i + 1, seq: 0, bootAt: 0, restarted: false, anomalous: (i / count) < rates.anomaly, held: undefined as Buffer | undefined }));
   let pending = 0;
   let stopped = false;
   let timer: NodeJS.Timeout;
@@ -52,9 +56,14 @@ async function main() {
     if (pending === 0) {
       for (const d of devices) {
         if (d.id === stopDevice && elapsed >= stopAfter * 1000) { d.held = undefined; continue; }
+        if (d.id === restartDevice && !d.restarted && elapsed >= restartAfter * 1000) {
+          d.held = undefined;
+          if (elapsed < (restartAfter + restartPause) * 1000) continue;
+          d.seq = 0; d.bootAt = elapsed; d.restarted = true; counters.restarts++;
+        }
         d.seq = (d.seq + 1) >>> 0;
         const heartbeat = heartbeatEvery > 0 && d.seq % heartbeatEvery === 0;
-        const data = encode({ type: heartbeat ? 2 : 1, deviceId: d.id, seq: d.seq, uptimeMs: Math.floor(elapsed) >>> 0,
+        const data = encode({ type: heartbeat ? 2 : 1, deviceId: d.id, seq: d.seq, uptimeMs: Math.floor(elapsed - d.bootAt) >>> 0,
           measurements: heartbeat ? [] : [
             { metricId: 1, value: Math.round((d.anomalous ? 8200 : 4000) + random() * 600) },
             { metricId: 2, value: Math.round((d.anomalous && d.id % 2 === 0 ? 18500 : 23700) + random() * 600) },

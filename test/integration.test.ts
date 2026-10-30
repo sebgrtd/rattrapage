@@ -113,3 +113,17 @@ test('large fleet SSE snapshots drain normally without reconnecting a healthy br
   assert.equal(hub.snapshot().service.clients, 1);
   await reader.cancel();
 });
+
+test('simulator resets seq and uptime while the same UDP hub continues running', { timeout: 12000 }, async t => {
+  const hub = await startHub(config()); t.after(() => hub.close());
+  const child = spawn(process.execPath, ['--import', 'tsx', 'src/simulator.ts', '--port', String((hub.udp.address() as AddressInfo).port), '--devices', '2', '--hz', '40', '--duration', '2', '--restart-device', '1', '--restart-after', '0.7', '--restart-pause', '0.1'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  t.after(() => { if (child.exitCode === null) child.kill(); });
+  let output = ''; child.stdout.on('data', chunk => { output += String(chunk); });
+  let errors = ''; child.stderr.on('data', chunk => { errors += String(chunk); });
+  const ended = once(child, 'exit');
+  await until(() => hub.snapshot().counters.restarts === 1, 6000);
+  assert.equal(hub.snapshot().counters.lost, 0);
+  assert.equal(hub.snapshot().devices.find(d => d.id === 1)!.status, 'online');
+  assert.equal(hub.snapshot().devices.find(d => d.id === 2)!.restarts, 0);
+  const [code] = await ended; assert.equal(code, 0, errors); assert.match(output, /"restarts":1/);
+});

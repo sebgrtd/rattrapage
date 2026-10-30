@@ -9,6 +9,14 @@
   "rateWindowMs": 2000,
   "maxDevices": 4096,
   "maxClients": 20,
+  "restart": {
+    "maxUptimeMs": 5000,
+    "maxSequence": 128,
+    "minUptimeDropMs": 250,
+    "confirmFrames": 3,
+    "confirmWindowMs": 1500,
+    "uptimeToleranceMs": 1000
+  },
   "historyFile": "data/history.jsonl",
   "historyIntervalMs": 5000,
   "historyMaxBytes": 10485760,
