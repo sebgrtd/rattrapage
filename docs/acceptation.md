@@ -37,3 +37,12 @@
 `npm run check` couvre le décodeur, la synthèse et les vrais échanges UDP/HTTP/SSE. Les tests injectent une horloge pour les temporisations métier : ils ne dépendent pas de pauses de plusieurs secondes. Le test d’intégration du simulateur utilise un réseau loopback et des durées réduites ; c’est le seul test métier nécessitant une émission réelle temporisée.
 
 `npm run benchmark` produit des mesures et non des estimations théoriques. Voir la méthode, les seuils de réussite et les limites dans le README.
+
+
+## Bonus : redémarrage et chaîne JSON
+
+1. Avec le hub lancé, démarrer `npm run demo:restart`. Après environ six secondes, l’appareil 7 reprend ses émissions avec une nouvelle séquence et un nouvel uptime ; le compteur de redémarrages augmente une seule fois.
+2. Vérifier que ses anciennes mesures et moyennes ne sont pas conservées après confirmation, puis que les nouvelles valeurs réapparaissent. Le compteur global de réception continue à augmenter.
+3. Relancer le hub avec `npm.cmd run hub -- --config config/pipeline-example.json` sous PowerShell, puis le simulateur nominal. L’appareil 50 est détecté mais ses mesures sont filtrées ; les autres affichent les agrégats configurés.
+4. Consulter l’historique et vérifier que les nouveaux instantanés conservent agrégats et compteurs de redémarrage. Les anciens instantanés sans ces champs restent lisibles.
+5. Lancer `npm run benchmark` : le rapport distingue le débit émis, le débit reçu, l’atteinte de la cible par les émetteurs et la capacité du traitement métier sans I/O.

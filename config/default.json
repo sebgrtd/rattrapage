@@ -9,9 +9,22 @@
   "rateWindowMs": 2000,
   "maxDevices": 4096,
   "maxClients": 20,
+  "restart": {
+    "maxUptimeMs": 5000,
+    "maxSequence": 128,
+    "minUptimeDropMs": 250,
+    "confirmFrames": 3,
+    "confirmWindowMs": 1500,
+    "uptimeToleranceMs": 1000
+  },
   "historyFile": "data/history.jsonl",
   "historyIntervalMs": 5000,
   "historyMaxBytes": 10485760,
+  "pipeline": [
+    { "id": "selection", "type": "filter", "excludeDeviceIds": [] },
+    { "id": "temperature-mean", "type": "aggregate", "label": "Moy. 10 s", "metricId": 1, "operation": "mean", "windowMs": 10000, "maxSamples": 256 },
+    { "id": "physical-alerts", "type": "alerts" }
+  ],
   "alerts": [
     { "id": "temperature", "label": "Surchauffe", "metricId": 1, "min": -2000, "max": 7000, "durationMs": 3000 },
     { "id": "voltage", "label": "Tension anormale", "metricId": 2, "min": 21000, "max": 26000, "durationMs": 500 },

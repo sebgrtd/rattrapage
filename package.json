@@ -10,13 +10,15 @@
   "scripts": {
     "hub": "tsx src/hub.ts",
     "simulator": "tsx src/simulator.ts",
-    "demo": "tsx src/simulator.ts --checksum-rate 0.03 --duplicate-rate 0.04 --reorder-rate 0.04 --anomaly-rate 0.15 --stop-device 7 --stop-after 8",
+    "demo": "tsx src/simulator.ts --checksum-rate 0.03 --duplicate-rate 0.04 --reorder-rate 0.04 --anomaly-rate 0.15 --stop-device 7 --stop-after 8 --restart-device 9 --restart-after 12 --restart-pause 1",
+    "demo:restart": "tsx src/simulator.ts --restart-device 7 --restart-after 5 --restart-pause 1",
     "test": "node --import tsx --test test/*.test.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
-    "benchmark": "tsx scripts/benchmark.ts",
+    "benchmark": "tsx scripts/benchmark-isolated.ts",
+    "benchmark:legacy": "tsx scripts/benchmark.ts",
     "permalinks": "node scripts/permalinks.mjs"
   },
   "devDependencies": {

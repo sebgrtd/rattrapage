@@ -17,7 +17,7 @@ test('sequence rejects duplicates/late frames, counts holes, isolates devices', 
   const f = new Fleet(loadConfig());
   f.receive(packet(10)); f.receive(packet(12)); f.receive(packet(12, 9900)); f.receive(packet(11, 9900)); f.receive(packet(1, 4200, 8));
   const s = f.snapshot();
-  assert.deepEqual(s.counters, { received: 5, accepted: 3, invalid: 0, lost: 1, duplicates: 1, late: 1, capacityRejected: 0 });
+  assert.deepEqual(s.counters, { received: 5, accepted: 3, invalid: 0, lost: 1, duplicates: 1, late: 1, capacityRejected: 0, restartPending: 0, restarts: 0, filtered: 0 });
   assert.equal(s.devices[0]!.metrics[0]!.value, 4200);
 });
 test('uint32 wrap handles contiguous values, holes and old packets', () => {
