@@ -26,15 +26,17 @@ npm run simulator
 
 Les valeurs évoluent : 50 appareils, 20 Hz chacun, soit 1 000 trames/s nominales. Les appareils sont identifiés `PH-001` à `PH-050`.
 
-Pour démontrer tous les défauts, arrêter le simulateur **et le hub** avec `Ctrl+C`, redémarrer le hub, puis lancer dans le second terminal :
+Pour démontrer les défauts, arrêter le simulateur avec `Ctrl+C`, puis lancer dans le second terminal :
 
 ```sh
 npm run demo
 ```
 
-Le redémarrage du hub est nécessaire entre deux sessions de simulateur : le simulateur remet ses compteurs de séquence à zéro, et l’inférence automatique d’un redémarrage matériel est volontairement hors périmètre.
+Le hub peut rester lancé entre deux sessions : il détecte le retour de la séquence et de l’uptime au début, puis confirme le redémarrage sur trois trames cohérentes. Pour retrouver tous les compteurs à zéro, redémarrer le hub. Les seuils et limites de cette détection sont décrits dans [docs/pipeline.md](docs/pipeline.md).
 
-La démo injecte 3 % de checksums invalides, 4 % de duplications, 4 % de désordres ; les huit premiers appareils sur 50 présentent des valeurs anormales continues. L’appareil 7 s’arrête après 8 s et devient hors ligne 3 s plus tard. Les autres appareils restent actifs. Les taux de défauts sont des probabilités par opportunité, pas des quotas exacts ; les défauts peuvent se cumuler.
+La démo injecte 3 % de checksums invalides, 4 % de duplications, 4 % de désordres ; les huit premiers appareils sur 50 présentent des valeurs anormales continues. L’appareil 7 s’arrête après 8 s et devient hors ligne 3 s plus tard. L’appareil 9 redémarre après 12 s, avec une seconde de silence : son compteur de redémarrages passe à 1 et ses agrégats repartent de zéro. Les autres appareils restent actifs. Les taux de défauts sont des probabilités par opportunité, pas des quotas exacts ; les défauts peuvent se cumuler.
+
+Pour observer uniquement un redémarrage, lancer `npm run demo:restart` : l’appareil 7 redémarre après 5 s et une seconde de silence.
 
 Pour vérifier le projet :
 
@@ -83,6 +85,8 @@ Le hub charge [config/default.json](config/default.json), puis les champs du fic
 | `historyIntervalMs` | 5000 | Intervalle entre instantanés persistés |
 | `historyMaxBytes` | 10485760 | Taille maximale par fichier, avec une archive `.1` |
 | `alerts` | 3 règles | Limites physiques et durée minimale d’anomalie |
+| `restart` | 3 trames de confirmation | Détection configurable des remises à zéro ; voir [les paramètres](docs/pipeline.md#détection-de-redémarrage) |
+| `pipeline` | filtre → moyenne → alertes | Liste ordonnée et extensible des traitements |
 
 Les règles utilisent les **unités entières du protocole**. Par défaut : température hors de [-20 ; 70] °C pendant 3 s ; tension hors de [21 ; 26] V ou courant hors de [0 ; 8] A pendant 500 ms. Les bornes sont inclusives, les dépassements stricts. Cette installation simulée fonctionne en **24 V continu**, car un `int16` signé en millivolts ne peut représenter que -32,768 à 32,767 V. Une nouvelle règle sur une métrique existante s’ajoute au JSON sans modifier le moteur. Le tableau `alerts` personnalisé remplace entièrement celui par défaut. Les erreurs de configuration arrêtent le démarrage avec un message explicite.
 
@@ -98,8 +102,15 @@ Les règles utilisent les **unités entières du protocole**. Par défaut : temp
 | `--anomaly-rate` | 0 | Fraction des appareils dont les valeurs restent anormales ; arrondi supérieur |
 | `--stop-device`, `--stop-after` | 0, 8 | Identifiant à arrêter et délai ; 0 désactive l’arrêt |
 | `--heartbeat-every` | 20 | Une trame sur 20 devient un heartbeat ; 0 désactive cette substitution |
+| `--restart-device`, `--restart-after`, `--restart-pause` | 0, 8, 1 | Appareil à redémarrer, délai et silence en secondes ; 0 désactive le scénario |
 
 Les heartbeats **remplacent** des télémétries : ils n’augmentent pas le débit nominal. Une séquence commune couvre les deux types. La minuterie cible des échéances absolues ; elle évite les rattrapages massifs et compte les cycles ignorés lorsque les envois précédents ne sont pas terminés. La graine rend les tirages reproductibles, pas le timing de l’OS.
+
+## Chaîne de traitement configurable
+
+La configuration JSON déclare les filtres, les agrégations et les règles d’alerte à exécuter. Les filtres précèdent les calculs. Des moyennes, minima et maxima glissants peuvent être ajoutés par métrique sans changer le code. Une nouvelle catégorie de traitement implémente `StepFactory` et s’enregistre dans le registre ; les étapes existantes restent inchangées.
+
+Le [guide de la chaîne et des redémarrages](docs/pipeline.md) contient les paramètres, les règles de comptage, les limites et la procédure d’extension. Le fichier [config/pipeline-example.json](config/pipeline-example.json) est directement utilisable avec `npm run hub -- --config config/pipeline-example.json` (`npm.cmd` sous PowerShell).
 
 ## Architecture et parcours d’une trame
 
@@ -109,9 +120,10 @@ flowchart LR
     ENC -->|1 datagramme = 1 trame| UDP[Socket UDP]
     UDP --> DEC[Décodeur / validation]
     DEC -->|invalide| ERR[Compteurs par motif]
-    DEC -->|valide| SEQ[Séquenceur par appareil]
+    DEC -->|valide| SEQ[Séquenceur et confirmation de redémarrage]
     SEQ -->|doublon / retard| DROP[Compteurs de rejet]
-    SEQ -->|acceptée + trous| FLEET[Dernières mesures + fraîcheur + alertes]
+    SEQ -->|acceptée + trous| PIPE[Chaîne JSON : filtres, agrégations, alertes]
+    PIPE --> FLEET[Dernières mesures et fraîcheur]
     ERR --> SNAP[Synthèse courante]
     DROP --> SNAP
     FLEET --> SNAP
@@ -123,7 +135,8 @@ flowchart LR
 | Fichier | Responsabilité |
 | --- | --- |
 | `src/protocol.ts` | Décodage et encodage manuels avec `Buffer` |
-| `src/sequence.ts` | Ordre des numéros uint32 et calcul des trous |
+| `src/sequence.ts` | Ordre des numéros uint32, trous et détection de redémarrage |
+| `src/processing/` | Registre extensible des filtres, agrégations et règles d’alerte |
 | `src/fleet.ts` | État métier, compteurs, fraîcheur, alertes et synthèse |
 | `src/config.ts` | Fusion et validation de la configuration |
 | `src/server.ts` | Adaptateurs UDP, HTTP, SSE et cycle de vie |
@@ -144,6 +157,8 @@ La régie doit décider rapidement **où intervenir** et **si les chiffres sont 
 - **Mesures périmées** : au moins une grandeur manque ou n’a pas été actualisée ; un heartbeat conserve la présence mais ne rafraîchit pas les mesures.
 - **Hors ligne** : aucune nouvelle trame acceptée depuis le délai configuré ; les anciennes mesures restent visibles en grisé.
 
+La table affiche aussi les agrégats configurés sous les mesures et le nombre de redémarrages par appareil. Les trames filtrées et les trames écartées pendant une confirmation sont comptées séparément.
+
 Les états sont exclusifs, dans l’ordre de priorité : hors ligne, alerte, mesures périmées, observation, opérationnel. Le bandeau « à surveiller » additionne alerte, observation et périmé. Le panneau d’attention présente les 20 appareils les plus prioritaires ; la table permet de consulter toute la flotte, chercher un identifiant et filtrer les états. Couleurs **et libellés** portent le sens. L’interface est responsive ; sur mobile le tableau défile horizontalement dans son conteneur.
 
 Le débit mesure les datagrammes réellement reçus, invalides incluses, sur une fenêtre glissante approximative ; la précision de bord est limitée à un compartiment (100 ms par défaut). Les compteurs sont cumulatifs pour la session. Le graphe conserve seulement les 60 derniers échantillons vus par ce navigateur, et démarre vide après un rechargement.
@@ -159,11 +174,11 @@ Pour un appareil, `delta = (seq - lastSeq) >>> 0` :
 - `0 < delta < 2³¹` : nouvelle trame, `delta - 1` trous supplémentaires ;
 - `delta >= 2³¹` : retard ou ambiguïté, trame écartée.
 
-Le passage de `0xffffffff` à `0` fonctionne. Les copies d’anciens numéros sont classées **retards**, faute de conserver un historique illimité des séquences. Elles sont bien écartées. Les rejets ne rafraîchissent ni la présence ni les mesures. Les appareils sont indépendants.
+Le passage de `0xffffffff` à `0` fonctionne. Les copies d’anciens numéros sont classées **retards**, faute de conserver un historique illimité des séquences. Elles sont bien écartées. Les rejets ne rafraîchissent ni la présence ni les mesures. Les appareils sont indépendants. Un redémarrage confirmé remet uniquement les mesures, les agrégats et les temporisations de l’appareil à zéro ; ses compteurs cumulés sont conservés.
 
 Les trous sont des **pertes estimées à l’instant d’acceptation**, non une mesure exacte des pertes physiques. Un paquet retardataire comblant un trou reste rejeté, sans décrémenter le compteur. Une corruption peut être comptée comme invalide puis produire un trou au paquet suivant. Aucun trou n’est détectable après la dernière trame d’un appareil silencieux. Pas de retransmission UDP ni de fenêtre de réordonnancement : priorité à l’état le plus récent.
 
-Identité de comptage vérifiable : `reçues = acceptées + invalides + doublons + retards + rejets de capacité`. `perdues` est une estimation supplémentaire, jamais ajoutée aux reçues. Pourcentages : `invalides / reçues` ; `perdues / (acceptées + perdues)` ; dénominateur nul = 0.
+Identité de comptage vérifiable : `reçues = acceptées + invalides + doublons + retards + rejets de capacité + trames de confirmation écartées`. `filtered` est un sous-compteur des trames acceptées, `restarts` compte des événements et `restartPending` des trames écartées pendant confirmation. `perdues` est une estimation supplémentaire, jamais ajoutée aux reçues. Pourcentages : `invalides / reçues` ; `perdues / (acceptées + perdues)` ; dénominateur nul = 0.
 
 ### Historique
 
@@ -178,11 +193,12 @@ Les liens ci-dessous sont des **permaliens sur un commit précis**, générés �
 <!-- PRINCIPLES:START -->
 | Principe | Preuve concrète | Code immuable |
 | --- | --- | --- |
-| KISS / traitement explicite | Le décodeur valide chaque champ avec Buffer et retourne un résultat typé ; aucune couche de parsing générique. | [src/protocol.ts, lignes 22–48](https://github.com/sebgrtd/rattrapage/blob/a2c3d776a57741a61cfc7806db7b635871713c51/src/protocol.ts#L22-L48) |
-| Séparation des responsabilités | Le séquenceur décide uniquement de l’ordre et des trous, indépendamment du réseau, des alertes et de l’affichage. | [src/sequence.ts, lignes 3–13](https://github.com/sebgrtd/rattrapage/blob/a2c3d776a57741a61cfc7806db7b635871713c51/src/sequence.ts#L3-L13) |
-| Injection de dépendance | Fleet reçoit sa configuration et son horloge ; les tests avancent le temps sans attendre. | [src/fleet.ts, lignes 11–32](https://github.com/sebgrtd/rattrapage/blob/a2c3d776a57741a61cfc7806db7b635871713c51/src/fleet.ts#L11-L32) |
-| Règles pilotées par les données | Un même moteur évalue les limites et durées de chaque règle JSON ; ajouter une règle ne demande pas de nouvelle condition spécifique. | [src/fleet.ts, lignes 50–61](https://github.com/sebgrtd/rattrapage/blob/a2c3d776a57741a61cfc7806db7b635871713c51/src/fleet.ts#L50-L61) |
-| Frontière réseau / métier | Les adaptateurs UDP et HTTP délèguent le traitement métier à Fleet et diffusent des instantanés. | [src/server.ts, lignes 9–85](https://github.com/sebgrtd/rattrapage/blob/a2c3d776a57741a61cfc7806db7b635871713c51/src/server.ts#L9-L85) |
+| KISS / traitement explicite | Le décodeur valide chaque champ avec Buffer et retourne un résultat typé ; aucune couche de parsing générique. | [src/protocol.ts, lignes 22–48](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/protocol.ts#L22-L48) |
+| Séparation des responsabilités | Le séquenceur décide uniquement de l’ordre et des trous, indépendamment du réseau, des alertes et de l’affichage. | [src/sequence.ts, lignes 3–74](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/sequence.ts#L3-L74) |
+| Injection de dépendance | Fleet reçoit sa configuration et son horloge ; les tests avancent le temps sans attendre. | [src/fleet.ts, lignes 11–35](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/fleet.ts#L11-L35) |
+| Règles pilotées par les données | Un même moteur évalue les limites et durées de chaque règle JSON ; ajouter une règle ne demande pas de nouvelle condition spécifique. | [src/processing/alerts.ts, lignes 5–28](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/processing/alerts.ts#L5-L28) |
+| Extension par composition | Les étapes implémentent un contrat commun ; une nouvelle factory rejoint le registre sans modifier les étapes existantes. | [src/processing/pipeline.ts, lignes 9–40](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/processing/pipeline.ts#L9-L40) |
+| Frontière réseau / métier | Les adaptateurs UDP et HTTP délèguent le traitement métier à Fleet et diffusent des instantanés. | [src/server.ts, lignes 9–85](https://github.com/sebgrtd/rattrapage/blob/07c2bc65f4f4b85458c791f2d1fe91dda44d843f/src/server.ts#L9-L85) |
 <!-- PRINCIPLES:END -->
 
 Pas de revendication de conformité intégrale à SOLID : l’objectif est une séparation utile et explicable, dans la contrainte d’une journée. Le registre contient uniquement le dernier état par appareil ; le débit utilise un nombre borné de compartiments. Un client SSE lent est déconnecté plutôt que de laisser grossir indéfiniment sa file de sortie.
@@ -201,7 +217,7 @@ Pas de revendication de conformité intégrale à SOLID : l’objectif est une s
 
 ## Qualité et validation
 
-Les 21 tests couvrent les trames de référence, les limites des entiers signés/non signés, les erreurs de structure, 10 000 datagrammes arbitraires déterministes, le séquencement, le wrap uint32, les seuils temporels, la fraîcheur par métrique, les heartbeats, l’arrêt d’un appareil, la capacité du registre, l’historique et sa rotation, les ports occupés, les API HTTP/SSE (dont la diffusion de grandes synthèses sans reconnexion) et les **cinq défauts du simulateur sur de vrais sockets UDP**.
+Les 33 tests couvrent les trames de référence, les limites des entiers signés/non signés, les erreurs de structure, 10 000 datagrammes arbitraires déterministes, le séquencement, le wrap uint32, les seuils temporels, la fraîcheur par métrique, les heartbeats, l’arrêt d’un appareil, la capacité du registre, l’historique et sa rotation, les ports occupés, les API HTTP/SSE (dont la diffusion de grandes synthèses sans reconnexion) les **cinq défauts du simulateur sur de vrais sockets UDP**, les redémarrages avec protection contre un paquet isolé, les fenêtres glissantes, les filtres et l’ajout d’un type de traitement sans modification des étapes existantes.
 
 La CI exécute `npm ci` puis `npm run check` à chaque push et pull request, sur Linux et Windows avec Node 22. Les contrôles manuels complémentaires sont décrits dans [docs/acceptation.md](docs/acceptation.md). L’interface a aussi été contrôlée avec un navigateur automatisé sur desktop et mobile ; la capture ci-dessus est issue de la vraie démo, pas d’un jeu de données factice.
 
@@ -209,42 +225,48 @@ La CI exécute `npm ci` puis `npm run check` à chaque push et pull request, sur
 
 ```sh
 npm run benchmark
-npm run benchmark -- --seconds 10 --rates 1000,5000,10000,20000,40000,80000,160000
+npm run benchmark -- --seconds 10 --rates 1000,10000,40000,80000,160000,320000 --workers 4 --core-seconds 3
 ```
 
-Sous PowerShell : remplacer `npm` par `npm.cmd` pour la seconde commande. Le script écrit [docs/benchmark.json](docs/benchmark.json), incluant date, CPU, OS, version Node et résultats bruts. Il utilise UDP sur loopback, un simulateur dans un processus séparé, un hub neuf par palier, des consultations HTTP à 2 Hz et la persistance activée. La fréquence reste 20 Hz ; le nombre d’appareils augmente. Pour ces mesures uniquement, la capacité du registre suit le nombre d’appareils.
+Sous PowerShell, utiliser `npm.cmd` pour la seconde commande. Le nouveau script produit [docs/benchmark-isolated.json](docs/benchmark-isolated.json), avec la machine, la configuration exacte, les compteurs de chaque émetteur et les mesures brutes. Il sépare deux expériences :
 
-Chaque palier dure 10 s ; 300 ms de vidage sont laissées avant le comptage final. Sont rapportés : envois effectivement réussis, datagrammes reçus et acceptés, débit d’émission mesuré, trous, erreurs d’envoi, cycles ignorés, RSS et latence HTTP maximales échantillonnées. Un palier est déclaré soutenu si au moins 99,9 % des envois arrivent, si le débit émis atteint 95 % de la cible et si toutes les trames reçues sont acceptées sans erreur d’envoi. Le compteur émis permet de voir aussi les pertes en fin de flux, invisibles au seul séquenceur.
+1. **Hub complet sur UDP** : quatre processus d’émission dédiés, identifiants disjoints, buffers réutilisés seulement après leur callback et petites rafales cadencées. Le hub conserve sa chaîne JSON par défaut, son historique, un lecteur SSE et des consultations HTTP à 2 Hz. Chaque palier dure 10 s et laisse 300 ms de vidage. Les débits demandés, réellement offerts et reçus sont distincts.
+2. **Traitement métier isolé** : des trames préencodées sont soumises directement à `Fleet.receive`. Seuls le décodage, les sessions, la chaîne JSON et la mise à jour de la flotte sont chronométrés. Encodage, UDP, HTTP et disque sont exclus. Après échauffement, plusieurs lots sur une flotte neuve sont mesurés ; tous les paquets doivent être acceptés. Ce résultat est une capacité de calcul, pas un débit réseau garanti.
+
+Le palier UDP est soutenu si le débit émis atteint 95 % de la cible, si au moins 99,9 % des paquets arrivent, si tous les paquets reçus sont acceptés et si aucune erreur HTTP/SSE/historique ni déconnexion de client lent n’est observée. `generatorReachedTarget` distingue un émetteur insuffisant ; `receiverKeptUp` décrit la réception. Les étiquettes de limite ne prétendent pas distinguer le code du hub, le noyau réseau et la contention entre processus sur le même PC.
 
 <!-- BENCHMARK:START -->
-Mesure du 2026-10-30T08:46:34.120Z, sur AMD Ryzen 9 5900HS with Radeon Graphics, win32 10.0.26200, Node v22.15.1. Plus haut palier validé : **40000 trames/s demandées** ; le palier 80000 échoue aux critères. Cette mesure porte sur la chaîne simulée complète ; la saturation du simulateur ne permet pas d’isoler le plafond du hub seul.
+Mesure du 2026-10-30T09:34:37.383Z, sur AMD Ryzen 9 5900HS with Radeon Graphics, win32 10.0.26200, Node v22.15.1, avec 4 émetteurs et 10 s par palier. Plus haut palier testé validé : **40000 trames/s demandées** ; le palier 80000 échoue aux critères malgré une émission suffisante. Ces processus partagent la machine avec ses autres applications ; ce n’est pas une isolation matérielle.
 
-| Cible /s | Émis /s mesurés | Livraison | Trous | RSS max Mio | HTTP max ms | Soutenu |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1000 | 1000 | 100 % | 0 | 80 | 56 | Oui |
-| 5000 | 4994 | 100 % | 0 | 78 | 20 | Oui |
-| 10000 | 9998 | 100 % | 0 | 86 | 9 | Oui |
-| 20000 | 19983 | 100 % | 0 | 102 | 16 | Oui |
-| 40000 | 39989 | 100 % | 0 | 106 | 21 | Oui |
-| 80000 | 67657 | 99.83 % | 1155 | 117 | 42 | Non |
-| 160000 | 69115 | 94.301 % | 39668 | 158 | 78 | Non |
+| Cible /s | Émis /s | Reçus /s estimés | Livraison | Trous | RSS max Mio | HTTP p95 ms | Soutenu |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1000 | 998 | 998 | 100 % | 0 | 84 | 22 | Oui |
+| 10000 | 9986 | 9986 | 100 % | 0 | 109 | 26 | Oui |
+| 40000 | 39949 | 39940 | 99.9795 % | 82 | 140 | 23 | Oui |
+| 80000 | 79927 | 66206 | 82.8331 % | 137275 | 167 | 16 | Non |
+| 160000 | 159897 | 58140 | 36.3612 % | 1017141 | 220 | 15 | Non |
+| 320000 | 247032 | 58307 | 23.6032 % | 1886870 | 231 | 14 | Non |
+
+Le traitement synchrone seul atteint **332041 trames/s**, sur 1000000 trames acceptées en 3.012 s de traitement cumulé. Cette mesure exclut UDP, HTTP, persistance et encodage ; elle ne constitue pas le débit soutenu du serveur complet.
 <!-- BENCHMARK:END -->
 
-Ces valeurs décrivent cette machine et cette charge courte, pas un SLA ni une certification matérielle. La RSS du processus peut inclure des allocations des paliers précédents et la mesure HTTP inclut le client de test. Le benchmark ne mesure pas le rendu de milliers de lignes dans un navigateur ni une liaison Wi-Fi réelle. Refaire des essais longs sur le réseau et le matériel du spectacle avant exploitation.
+Le [premier benchmark](docs/benchmark.json), basé sur le simulateur pédagogique, est conservé pour comparaison et se relance avec `npm run benchmark:legacy`. Son plafond ne doit pas être présenté comme celui du hub. Les résultats récents incluent les nouveaux traitements : une comparaison brute avec l’ancienne version mélange donc un changement d’émetteur et un changement de charge métier.
+
+Les essais sont courts et locaux. Ils ne constituent ni un SLA ni une mesure d’un LAN réel ; ils ne mesurent pas le rendu de milliers de lignes dans un navigateur. Le benchmark synchrone bloque volontairement sa boucle d’événements et ne représente pas un serveur réactif à ce même débit. Les mesures UDP conservent la réactivité HTTP/SSE. Relancer des paliers plus rapprochés et des essais longs sur le matériel cible pour préciser le maximum soutenu.
 
 ## Limites connues et suite logique
 
-- Pas d’identifiant de session dans PulseHub v1 : un redémarrage matériel peut être confondu avec un paquet ancien. `uptimeMs` est affichable via l’API mais n’est pas utilisé pour réinitialiser automatiquement le séquenceur. Redémarrer le hub pour une nouvelle session de simulateur. Le wrap uint32 normal est pris en charge, le redémarrage automatique ne l’est pas.
+- PulseHub v1 n’a pas de `bootId` : les redémarrages sont détectés par une heuristique configurable sur `seq` et `uptimeMs`, confirmée sur plusieurs trames. Elle évite le cas d’un ancien paquet isolé, mais ne peut pas lever toutes les ambiguïtés. Une observation trop tardive, un redémarrage très précoce ou plusieurs anciens paquets cohérents restent des limites documentées. Le wrap uint32 normal est également pris en charge.
 - La comparaison sérielle suppose moins de 2³¹ séquences d’écart entre observations. Au-delà, l’ordre est ambigu.
 - L’état initial est vide, sans inventaire attendu : un appareil qui n’a jamais émis ne peut pas être déclaré absent. Après détection, les appareils restent au registre jusqu’au redémarrage, dans la limite configurée.
 - Une valeur anormale est présumée continue entre mesures fraîches. Une absence de mesure pendant `staleMs` annule la continuité ; le prochain dépassement repart de zéro. Le hub ne peut pas connaître les fluctuations entre deux émissions.
 - Un XOR détecte certaines corruptions, pas une falsification ; UDP n’apporte ni authentification ni garantie de livraison. Les identifiants peuvent entrer en collision ou être usurpés. L’écoute est locale par défaut ; ouvrir au LAN requiert un réseau de régie de confiance. Pas de TLS, comptes utilisateurs ou exposition Internet.
 - Pas de reprise automatique après une erreur définitive du socket, ni de déploiement haute disponibilité. Les erreurs sont comptées ; un redémarrage du processus peut être nécessaire.
 - L’historique est périodique et borné, sans journal de toutes les trames ni reprise de l’état métier. Un arrêt brutal peut perdre la dernière écriture.
-- Règles d’alerte configurables, mais pas de pipeline générique de filtres et agrégations à plugins. Ce bonus complet n’est pas revendiqué.
+- La chaîne est extensible par du code local de confiance. Le JSON sélectionne et paramètre les types enregistrés ; il ne charge pas de code distant. Les agrégats sont bornés en nombre d’échantillons et ne sont pas pondérés par le temps.
 - Pas de contrôle des équipements, de notifications externes, de tests de charge multi-machines ou de validation utilisateur sur un vrai spectacle.
 
-Bonus réalisés : alertes avec durée, persistance consultable, wrap de séquence, mesure de débit documentée, CI. Les limites ci-dessus précisent la portée exacte.
+Bonus implémentés : chaîne de traitement JSON extensible, alertes avec durée, persistance consultable, wrap et détection de redémarrage, mesures de débit avec émetteurs dédiés et traitement métier isolé, CI. Les limites ci-dessus précisent la portée exacte.
 
 ## Git et remise
 

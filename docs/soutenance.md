@@ -13,7 +13,7 @@ Ce document aide à comprendre et démontrer le livrable. Il ne remplace pas la 
 | 11–14 min | Ouvrir `sequence.ts` puis `fleet.ts` | Différence modulaire, wrap, pertes, âge des mesures, horloge injectée |
 | 14–16 min | Historique, filtres et reconnexion | Lecture différée et données figées lors d’une déconnexion |
 | 16–18 min | `npm run check`, CI et benchmark | Tests réellement exécutés, méthode de charge et portée des résultats |
-| 18–20 min | Compromis, limites, usage de l’IA | Redémarrage ambigu, historique borné, choix sans framework, assistance déclarée |
+| 18–20 min | Compromis, limites, usage de l’IA | Détection de redémarrage et ambiguïtés restantes, chaîne configurable, historique borné, assistance déclarée |
 
 ## Expliquer le protocole, sans réciter
 
@@ -31,7 +31,7 @@ Pour `10, 12, 12, 11`, le hub accepte 10 puis 12, compte un trou (11), écarte l
 
 `>>> 0` convertit le résultat en entier non signé 32 bits. Après `0xffffffff`, recevoir 0 donne un delta égal à 1 : progression normale. À partir d’un écart de 2³¹, on ne peut plus ordonner sans ambiguïté les deux numéros sur l’anneau ; cette implémentation rejette.
 
-Un redémarrage qui remet `seq` et `uptimeMs` à zéro pourrait ressembler à un paquet retardé du début de session. Le protocole n’a pas de `bootId`. La solution livrée conserve une politique simple et documente le besoin de redémarrer le hub entre sessions ; elle ne prétend pas résoudre cette ambiguïté.
+Un redémarrage qui remet `seq` et `uptimeMs` à zéro pourrait ressembler à un paquet retardé du début de session. Le protocole n’a pas de `bootId`. La solution confirme un redémarrage sur trois trames distinctes dont les compteurs repartent bas et progressent de manière cohérente. Les premières trames candidates sont écartées. À confirmation, les mesures, moyennes et durées d’alerte sont réinitialisées sans inventer de pertes entre sessions. Les compteurs de réception restent cumulés. Une protection sur l’uptime rejette les anciens paquets manifestement incompatibles ; sans `bootId`, elle ne peut pas garantir tous les cas. Voir les paramètres et limites dans `docs/pipeline.md`.
 
 ## Expliquer les temporisations
 
@@ -45,7 +45,7 @@ L’horloge du métier est un paramètre du constructeur de `Fleet`. Dans les te
 
 ## Expliquer les ressources et la visualisation
 
-L’état conserve une entrée par appareil, trois dernières mesures et un début de dépassement par règle ; il ne stocke pas toutes les trames. Le débit utilise 20 compartiments, pas un tableau contenant chaque réception. Le registre et le nombre de clients sont bornés. L’historique a une rotation et au plus une écriture en attente.
+L’état conserve une entrée par appareil, trois dernières mesures, un début de dépassement par règle et des fenêtres d’agrégation bornées ; il ne stocke pas toutes les trames. La chaîne JSON choisit les filtres, moyennes/minima/maxima et règles exécutées. Une fabrique par type permet d’ajouter une catégorie sans modifier les étapes existantes. Le débit utilise 20 compartiments, pas un tableau contenant chaque réception. Le registre et le nombre de clients sont bornés. L’historique a une rotation et au plus une écriture en attente.
 
 Le navigateur reçoit une synthèse à 2 Hz alors que les appareils émettent à 20 Hz. Les trames sont toutes traitées, mais l’affichage n’a pas besoin de se redessiner 1 000 fois par seconde. SSE suffit car le flux va du serveur vers le navigateur. Les champs affichés sont affectés via `textContent`, pas injectés en HTML.
 
@@ -72,3 +72,11 @@ Le navigateur reçoit une synthèse à 2 Hz alors que les appareils émettent à
 - Refaire la démo sans anomalies physiques et expliquer pourquoi des trous n’impliquent pas forcément une surchauffe.
 
 Pour l’IA, décrire honnêtement l’assistance de Codex à la génération, à la correction et à la validation du projet. Ne revendiquer une compréhension qu’après avoir lu le code, refait les essais et su répondre aux questions ci-dessus.
+
+
+## Démontrer les bonus ajoutés
+
+- Lancer `npm run demo:restart` : l’appareil 7 repart à zéro après une seconde de silence, sans redémarrer le hub. Montrer `restarts` et expliquer pourquoi deux trames candidates n’actualisent pas encore l’état.
+- Utiliser `config/pipeline-example.json` : l’appareil 50 est filtré, les autres affichent une moyenne de température et un minimum de tension. Montrer les trois modules de traitement et le registre commun.
+- Expliquer la différence entre les trames acceptées au transport et les trames retenues après filtrage. Une trame filtrée n’invente pas de perte de séquence et ne doit pas laisser une ancienne mesure saine affichée comme actuelle.
+- Comparer les résultats UDP et le calcul métier isolé. Si l’émetteur n’atteint pas sa consigne, ne pas attribuer son plafond au hub ; si la réception perd des paquets, la pile réseau et le code partagent encore le même chemin.
