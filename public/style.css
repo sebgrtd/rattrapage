@@ -2,8 +2,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-size:14px}
 .rail{position:fixed;inset:0 auto 0 0;width:76px;border-right:1px solid var(--line);display:flex;align-items:center;flex-direction:column;background:#0b0b0b}
-.logo{text-decoration:none;color:var(--text);font-weight:900;font-size:29px;letter-spacing:-2px;margin:27px 0}
-.logo span{color:#000;background:var(--accent);border-radius:3px;padding:0 4px 2px 2px;margin-left:3px}
+.logo{display:block;text-decoration:none;margin:25px 0}
 .rail-label{writing-mode:vertical-rl;font-size:9px;letter-spacing:3px;color:#888;margin-top:70px}
 .rail-bottom{margin-top:auto;margin-bottom:25px;color:var(--muted);font-size:10px}
 main{margin-left:76px;padding:0 42px 22px;max-width:1900px}
@@ -94,7 +93,6 @@ tbody tr:hover{background:#202020}
 footer{display:flex;justify-content:space-between;gap:20px;font-size:9px;color:var(--muted);margin-top:24px}
 footer .dot{margin-right:6px}
 footer .muted{margin:0 12px}
-.history-panel{padding:16px;border:1px solid #61400f;border-radius:8px;display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px;background:#1a140b;font-size:12px}
 .warning{padding:12px 18px;background:#f6cf6510;border:1px solid #f6cf6550;border-radius:6px;margin-bottom:20px;color:var(--amber);font-size:12px;line-height:1.5}
 [hidden]{display:none!important}
 @media(min-width:1600px){main{padding-inline:60px}

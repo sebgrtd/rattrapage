@@ -19,6 +19,7 @@ export async function startHub(config: Config) {
   for (const [path, file, type] of [
     ['/', 'index.html', 'text/html'], ['/app.js', 'app.js', 'text/javascript'], ['/style.css', 'style.css', 'text/css'],
     ['/ui.js', 'ui.js', 'text/javascript'], ['/ui.css', 'ui.css', 'text/css'], ['/favicon.svg', 'favicon.svg', 'image/svg+xml'],
+    ['/history.js', 'history.js', 'text/javascript'], ['/history.css', 'history.css', 'text/css'],
   ]) {
     files.set(path!, { body: await readFile(new URL(`../public/${file}`, import.meta.url)), type: type! });
   }
@@ -27,13 +28,23 @@ export async function startHub(config: Config) {
     res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'");
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'GET') { res.writeHead(405, { Allow: 'GET' }).end(); return; }
-    const path = new URL(req.url ?? '/', 'http://localhost').pathname;
+    const url = new URL(req.url ?? '/', 'http://localhost');
+    const path = url.pathname;
     if (path === '/api/state') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }).end(JSON.stringify(snapshot())); return;
     }
-    if (path === '/api/history') {
-      void history.read().then(entries => {
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }).end(JSON.stringify(entries));
+    if (path === '/api/history' || path === '/api/history/index') {
+      const at = url.searchParams.get('at');
+      const time = at === null ? NaN : Date.parse(at);
+      if (at !== null && (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(at) ||
+          !Number.isFinite(time) || new Date(time).toISOString().slice(0, 19) !== at.slice(0, 19))) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' }).end(JSON.stringify({ error: 'Date ISO UTC valide attendue (at).' })); return;
+      }
+      const result = path === '/api/history/index'
+        ? history.timestamps().then(timestamps => ({ enabled: Boolean(config.historyFile), intervalMs: config.historyIntervalMs, timestamps }))
+        : at === null ? history.read() : history.at(time, config.historyIntervalMs / 2);
+      void result.then(value => {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' }).end(JSON.stringify(value));
       }).catch(() => { res.writeHead(500).end('Historique indisponible'); });
       return;
     }

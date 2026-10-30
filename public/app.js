@@ -4,7 +4,6 @@ const labels = { online: 'Opérationnel', alert: 'Alerte', watch: 'Observation',
 let current;
 let latest;
 let historical = false;
-let entries = [];
 let rates = [];
 const set = (id, value) => { $(id).textContent = value; };
 const element = (tag, text, className) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (className) e.className = className; return e; };
@@ -108,30 +107,29 @@ function render(s, chart = true) {
 }
 $('search').addEventListener('input', renderTable);
 $('status-filter').addEventListener('change', renderTable);
-$('history-button').addEventListener('click', async () => {
-  $('history-panel').hidden = false;
-  set('history-message', 'Chargement…');
-  try {
-    const response = await fetch('/api/history'); if (!response.ok) throw new Error();
-    entries = await response.json();
-    $('history-select').replaceChildren(element('option', 'Choisir un instantané…'));
-    $('history-select').firstChild.value = '';
-    entries.forEach((entry, i) => { const option = element('option', new Date(entry.at).toLocaleString('fr-FR')); option.value = String(i); $('history-select').append(option); });
-    set('history-message', entries.length ? `${entries.length} instantanés disponibles` : 'Aucun instantané enregistré pour le moment.');
-  } catch { set('history-message', 'Impossible de charger l’historique.'); }
-});
-$('history-select').addEventListener('change', event => {
-  if (event.target.value === '') return;
-  const entry = entries[Number(event.target.value)]; if (!entry) return;
-  historical = true; rates = []; render({ ...entry.snapshot, at: entry.at });
-  set('chart-caption', 'Débit enregistré dans cet instantané');
-  set('connection', 'Lecture historique');
-});
-$('live-button').addEventListener('click', () => {
-  historical = false; rates = []; $('history-panel').hidden = true;
-  set('chart-caption', 'Derniers échantillons du navigateur');
-  set('connection', events.readyState === EventSource.OPEN ? 'En direct' : 'Reconnexion…');
-  if (latest) render(latest);
+window.PulseHistory.init({
+  onSelect(entry) {
+    document.body.classList.add('is-historical');
+    historical = true; rates = []; $('dashboard-content').hidden = false; $('history-empty').hidden = true;
+    render({ ...entry.snapshot, at: entry.at });
+    set('chart-caption', 'Débit enregistré dans cet instantané');
+    set('connection', 'Lecture historique');
+  },
+  onEmpty(title, detail) {
+    document.body.classList.add('is-historical');
+    historical = true; current = undefined;
+    $('dashboard-content').hidden = true; $('history-empty').hidden = false;
+    set('history-empty-title', title); set('history-empty-detail', detail);
+    set('connection', 'Consultation historique'); set('clock', '—');
+    set('description', 'Choisissez un instant dans l’historique. Le hub continue de recevoir les trames en direct.');
+  },
+  onLive() {
+    document.body.classList.remove('is-historical');
+    historical = false; rates = []; $('dashboard-content').hidden = false; $('history-empty').hidden = true;
+    set('chart-caption', 'Derniers échantillons du navigateur');
+    set('connection', events.readyState === EventSource.OPEN ? 'En direct' : 'Reconnexion…');
+    if (latest) render(latest);
+  }
 });
 const events = new EventSource('/events');
 events.onopen = () => { $('connection-dot').classList.add('connected'); if (!historical) set('connection', 'En direct'); };

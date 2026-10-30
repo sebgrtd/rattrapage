@@ -1,0 +1,67 @@
+.history-panel{margin-bottom:24px;border:1px solid #414141;border-radius:12px;background:#111;overflow:hidden}
+.history-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 26px;border-bottom:1px solid var(--line)}
+.history-heading .eyebrow{font-size:9px;margin-bottom:10px}
+.history-heading h2{font-size:23px;letter-spacing:-.5px}
+.history-heading p:last-child{font-size:12px;color:var(--muted);margin:8px 0 0;line-height:1.6}
+.history-workspace{display:grid;grid-template-columns:285px minmax(0,1fr)}
+.history-calendar{padding:20px;border-right:1px solid var(--line)}
+.calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.calendar-heading strong{font-size:13px;font-weight:500;text-transform:capitalize}
+.calendar-heading .button{font-size:22px;padding:0;width:30px;height:32px;line-height:1}
+.calendar-week,.calendar-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.calendar-week{font-size:10px;color:var(--muted);margin-bottom:9px}
+.calendar-day{position:relative;appearance:none;border:1px solid transparent;border-radius:7px;background:transparent;color:#aaa;font-family:inherit;font-size:12px;line-height:1;min-height:32px;padding:7px 0 10px;cursor:pointer}
+.calendar-day:hover{background:#292929;border-color:#555}
+.calendar-day.has-data{color:#fff}
+.calendar-day.has-data::after{content:'';position:absolute;bottom:4px;left:calc(50% - 1.5px);width:3px;height:3px;border-radius:50%;background:var(--accent)}
+.calendar-day[aria-pressed="true"]{background:var(--accent);color:#000;font-weight:700}
+.calendar-day[aria-pressed="true"]::after{background:#000}
+.calendar-day[aria-current="date"]{border-color:#777}
+.calendar-legend{font-size:9px;color:var(--muted);margin:15px 0 0}
+.calendar-legend i{display:inline-block;width:4px;height:4px;background:var(--accent);border-radius:50%;margin:0 6px 2px 0}
+.history-explorer{padding:24px 28px;min-width:0}
+.instant-fields{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.instant-fields label{display:block;font-size:11px;color:#bbb;margin-bottom:9px}
+.instant-fields input{font-size:17px;font-variant-numeric:tabular-nums;height:44px;border-color:#4a4a4a}
+.instant-fields input[aria-invalid="true"]{border-color:var(--red)}
+.date-field input{width:153px;text-align:center;letter-spacing:.2px}
+.time-fields{display:flex;align-items:center;gap:3px;border:1px solid #4a4a4a;border-radius:5px;background:#0a0a0a;height:44px;padding:0 4px}
+.time-fields:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+.time-fields input{border:0;background:transparent;width:38px;text-align:center;padding:10px 0;height:40px;outline:none}
+.time-fields span{color:var(--muted)}
+.history-search{height:44px;background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+.history-search:hover{background:#ffad33}
+.history-search span{color:#000;margin-left:14px}
+.history-hint{font-size:10px;color:var(--muted);margin:12px 0 20px;line-height:1.6}
+.history-shortcuts{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
+.history-shortcuts>span{font-size:10px;color:var(--muted);margin-right:4px}
+.history-shortcuts .button{padding:7px 10px;font-size:10px;background:#1a1a1a;border-color:#333}
+.button:disabled{opacity:.4;cursor:not-allowed}
+.timeline-heading,.timeline-bounds{display:flex;justify-content:space-between;gap:12px;font-size:10px;color:var(--muted);line-height:1.5}
+.timeline-heading output{color:var(--accent);font-variant-numeric:tabular-nums}
+.history-track{height:13px;position:relative;margin-top:14px;background:#202020;border-radius:2px;overflow:hidden}
+.history-track span{position:absolute;top:0;bottom:0;background:#ff990075;min-width:2px}
+#history-range{appearance:none;display:block;width:100%;height:18px;margin:0;padding:0;border:0;background:transparent;cursor:pointer}
+#history-range::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:#444}
+#history-range::-moz-range-track{height:3px;border-radius:2px;background:#444}
+#history-range::-webkit-slider-thumb{appearance:none;width:13px;height:13px;border:2px solid #111;border-radius:50%;background:var(--accent);margin-top:-5px;box-shadow:0 0 0 1px var(--accent)}
+#history-range::-moz-range-thumb{width:10px;height:10px;border:2px solid #111;border-radius:50%;background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+#history-range:disabled{opacity:.35;cursor:not-allowed}
+.history-result{margin-top:21px;padding:15px 17px;background:#1b1b1b;border-left:2px solid var(--accent);border-radius:0 5px 5px 0;line-height:1.6}
+.history-result strong{display:block;font-size:13px;font-weight:500}
+.history-result p{margin:5px 0 0;color:var(--muted);font-size:11px}
+.history-result[data-state="found"]{border-color:var(--green)}
+.history-result[data-state="error"]{border-color:var(--red)}
+.history-neighbors{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.history-neighbors .button{padding:7px 10px;font-size:10px;white-space:normal}
+.history-empty{padding:40px 24px;text-align:center;color:var(--muted);border:1px dashed #414141;border-radius:10px;margin-bottom:24px}
+.history-empty>span{font-size:40px;color:var(--accent)}
+.history-empty h2{font-size:19px;margin:10px 0;color:#fff}
+.history-empty p{font-size:12px;line-height:1.6}
+body.is-historical #dashboard-content{display:flex;flex-direction:column}
+body.is-historical .fleet-panel{order:-1;margin-bottom:22px}
+body.is-historical .fleet-panel .table-scroll{max-height:420px;overflow:auto}
+body.is-historical .chart-wrap,body.is-historical .chart-labels{display:none}
+body.is-historical .rate{margin-bottom:25px}
+@media(max-width:1100px){.history-workspace{grid-template-columns:248px minmax(0,1fr)}.history-explorer{padding:22px 20px}.instant-fields{gap:12px}.history-calendar{padding:16px}}
+@media(max-width:760px){.history-workspace{grid-template-columns:1fr}.history-heading{padding:20px;align-items:flex-start}.history-heading h2{font-size:20px}.history-heading>.button{font-size:10px;padding:9px}.history-heading>.button span{display:none}.history-calendar{border-right:0;border-bottom:1px solid var(--line);padding:16px 20px}.calendar-days{max-width:360px;margin:auto}.calendar-week,.calendar-heading{max-width:360px;margin-inline:auto}.calendar-legend{text-align:center}.history-explorer{padding:20px}.instant-fields{gap:12px}.instant-fields .history-search{width:100%}.date-field{flex:1}.date-field input{width:100%;min-width:118px}.timeline-heading{flex-direction:column;gap:3px}.history-hint{margin-bottom:16px}}
