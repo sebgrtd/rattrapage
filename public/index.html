@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b100f"><title>PulseHub — Régie live</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <aside class="rail"><a class="logo" href="/" aria-label="PulseHub, accueil">p<span>h</span></a><span class="rail-label">SUPERVISION</span><span class="rail-bottom">V1.0</span></aside>
+  <main>
+    <header><div class="brand">PULSEHUB <span>CONTROL ROOM</span></div><div class="connection"><i id="connection-dot"></i><span id="connection" role="status">Connexion…</span><span class="divider">/</span><span id="clock">--:--:--</span></div></header>
+    <section class="page-heading"><div><p class="eyebrow">TÉLÉMÉTRIE / VUE D’ENSEMBLE</p><h1>La scène, sous contrôle<span>.</span></h1><p class="subtitle" id="description">En attente du premier signal. Lancez le simulateur pour connecter la flotte.</p></div><button id="history-button" class="button">Consulter l’historique <span>↗</span></button></section>
+    <section id="history-panel" class="history-panel" hidden><label for="history-select">Instantané enregistré</label><select id="history-select"><option value="">Chargement…</option></select><button id="live-button" class="button">Revenir au direct</button><span id="history-message" role="status"></span></section>
+    <div id="warning" class="warning" role="status" hidden></div>
+    <section class="stats" aria-label="État de la flotte">
+      <article class="stat"><div class="stat-title">APPAREILS DÉTECTÉS <span class="icon">⌁</span></div><strong id="total">0</strong><span class="stat-caption">Identifiants uniques de la session</span></article>
+      <article class="stat"><div class="stat-title"><span class="dot green"></span> OPÉRATIONNELS</div><strong id="online">0</strong><span class="stat-caption">Connectés, mesures fraîches et normales</span></article>
+      <article class="stat"><div class="stat-title"><span class="dot amber"></span> À SURVEILLER</div><strong id="attention">0</strong><span class="stat-caption" id="attention-detail">0 alerte · 0 en observation · 0 périmé</span></article>
+      <article class="stat"><div class="stat-title"><span class="dot red"></span> HORS LIGNE</div><strong id="offline">0</strong><span class="stat-caption">Délai de réception dépassé</span></article>
+    </section>
+    <div class="overview">
+      <section class="panel reception"><div class="panel-heading"><h2>Santé de la réception</h2><span class="chip" id="reception-state">AUCUN SIGNAL</span></div><div class="rate"><strong id="rate">0</strong><span>trames / seconde</span><span class="tiny">FENÊTRE GLISSANTE</span></div><div class="chart-wrap"><svg id="chart" viewBox="0 0 800 110" preserveAspectRatio="none" aria-label="Évolution du débit de réception" role="img"><path class="grid" d="M0 20H800 M0 60H800 M0 100H800"/><path id="chart-fill" class="chart-fill"/><path id="chart-line" class="chart-line"/></svg></div><div class="chart-labels"><span id="chart-caption">Derniers échantillons du navigateur</span><span>MAINTENANT</span></div><div class="reception-stats"><div><span>Reçues</span><b id="received">0</b></div><div><span>Invalides</span><b id="invalid">0</b></div><div><span>Pertes estimées</span><b id="lost">0</b></div><div><span>Doublons / retards</span><b id="discarded">0 / 0</b></div></div><p class="footnote" id="quality">Invalides 0 % · pertes estimées 0 %</p></section>
+      <section class="panel alerts-panel"><div class="panel-heading"><h2>Points d’attention</h2><span class="count-badge" id="alert-count">0</span></div><div id="alerts" class="alerts"><div class="empty-alert"><span class="radar">◎</span><strong>Le calme avant le live.</strong><p>Les alertes et pertes de signal apparaîtront ici.</p></div></div></section>
+    </div>
+    <section class="panel fleet-panel"><div class="panel-heading fleet-heading"><div><h2>Flotte d’équipements <span id="fleet-count" class="muted">/ 0</span></h2><p class="small">Dernier état accepté de chaque appareil</p></div><div class="filters"><input id="search" type="search" placeholder="Rechercher un appareil…" aria-label="Rechercher par identifiant"><select id="status-filter" aria-label="Filtrer par état"><option value="all">Tous les états</option><option value="attention">À surveiller</option><option value="online">Opérationnels</option><option value="offline">Hors ligne</option></select></div></div><div class="table-scroll"><table><thead><tr><th>APPAREIL</th><th>ÉTAT</th><th>TEMPÉRATURE</th><th>TENSION</th><th>COURANT</th><th>DERNIER SIGNAL</th><th>PERTES</th></tr></thead><tbody id="devices"></tbody></table></div><div id="empty-fleet" class="empty-fleet"><span>⌁</span><strong>Aucun appareil connecté</strong><p>Démarrez <code>npm run simulator</code> dans un second terminal.</p></div><div class="table-footer"><span id="visible-count">0 appareil affiché</span><span>UDP · PULSEHUB V1 · BIG-ENDIAN</span></div></section>
+    <footer><span><i class="dot green"></i> LOCAL FIRST <span class="muted">/</span> Un signal clair. Une régie sereine.</span><span id="storage">Historique : en attente</span></footer>
+  </main>
+</body>
+</html>
